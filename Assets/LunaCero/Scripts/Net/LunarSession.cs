@@ -32,6 +32,21 @@ namespace LunaCero
         public static bool InMultiplayer => Current == Mode.Host || Current == Mode.Client;
         public static bool IsHost => Current == Mode.Host;
         public static bool IsClient => Current == Mode.Client;
+        public static bool PauseMenuOpen => Instance != null && Instance.pauseMenuOpen;
+        private bool pauseMenuOpen;
+        private float previousTimeScale = 1f;
+
+        private void TogglePauseMenu()
+        {
+            pauseMenuOpen = !pauseMenuOpen;
+            if (!InMultiplayer)
+            {
+                if (pauseMenuOpen) { previousTimeScale = Time.timeScale; Time.timeScale = 0f; }
+                else Time.timeScale = previousTimeScale;
+            }
+            Cursor.lockState = pauseMenuOpen ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = pauseMenuOpen;
+        }
         public bool MatchStarted { get; private set; }
         public static bool WaitingForMatch => InMultiplayer && Instance != null && !Instance.MatchStarted;
         public void ApplyMatchStarted(bool started) { if (started) MatchStarted = true; }
@@ -71,6 +86,7 @@ namespace LunaCero
 
         private void OnScene()
         {
+            pauseMenuOpen = false;
             gameScene = FindObjectOfType<LunarPlayerCombat>() != null && FindObjectOfType<LunarHordeDirector>() != null;
             if(gameScene && OpenOnlineOnNextScene) { OpenOnlineOnNextScene=false; screen=Screen.Online; RefreshOnline(); }
             bool automated = LunarAutomation.Running;
@@ -81,6 +97,8 @@ namespace LunaCero
 
         private void Update()
         {
+            if (gameScene && !LunarAutomation.Running && !LostInSpaceFinale.Active && Input.GetKeyDown(KeyCode.Escape) &&
+                (pauseMenuOpen || !LunarPlayerRole.MenuOpen)) TogglePauseMenu();
             finder?.Update();
             lanHub?.Update();
             if (Link == null) return;
@@ -136,6 +154,8 @@ namespace LunaCero
 
         private void Shutdown()
         {
+            if (pauseMenuOpen && !InMultiplayer) Time.timeScale = previousTimeScale;
+            pauseMenuOpen = false;
             MatchStarted = false;
             Link?.Dispose(); Link = null;
             lanHub?.Dispose(); lanHub = null;
@@ -268,6 +288,7 @@ namespace LunaCero
         // ------------------------------------------------------------ Menu
         private void OnGUI()
         {
+            if (pauseMenuOpen) { PauseMenu(); return; }
             if (!Deciding) { if (InMultiplayer) RoomBadge(); return; }
             EnsureStyles();
             float scale = Mathf.Max(0.5f, Mathf.Min(UnityEngine.Screen.width / 1280f, UnityEngine.Screen.height / 720f));
@@ -303,6 +324,33 @@ namespace LunaCero
             if (!string.IsNullOrEmpty(error)) { var red = new GUIStyle(small); red.normal.textColor = new Color(1f, 0.45f, 0.4f); GUILayout.Label(error, red); }
             else if (!string.IsNullOrEmpty(status) && screen != Screen.Connecting) GUILayout.Label(status, small);
             GUILayout.EndArea();
+            GUI.matrix = previous;
+        }
+
+        private void PauseMenu()
+        {
+            EnsureStyles();
+            float scale = Mathf.Max(0.5f, Mathf.Min(UnityEngine.Screen.width / 1280f, UnityEngine.Screen.height / 720f));
+            Matrix4x4 previous = GUI.matrix;
+            Color previousColor = GUI.color;
+            GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
+            float width = UnityEngine.Screen.width / scale, height = UnityEngine.Screen.height / scale;
+            Fill(new Rect(0, 0, width, height), new Color(0.005f, 0.012f, 0.025f, 0.8f));
+            Rect panel = new Rect(width / 2 - 230, height / 2 - 165, 460, 330);
+            Fill(panel, new Color(0.025f, 0.055f, 0.085f, 0.98f));
+            GUI.color = Color.white;
+            GUILayout.BeginArea(new Rect(panel.x + 24, panel.y + 20, panel.width - 48, panel.height - 40));
+            GUILayout.Label("MENU DE PARTIDA", title);
+            GUILayout.Space(18);
+            if (GUILayout.Button("CONTINUAR (Esc)", GUILayout.Height(48))) TogglePauseMenu();
+            GUILayout.Space(12);
+            if (GUILayout.Button("VOLVER AL MENU PRINCIPAL", GUILayout.Height(48))) ReturnToMainMenu();
+            GUILayout.Space(14);
+            GUILayout.Label(IsHost ? "Al volver al menu se cierra tu partida para todos."
+                : InMultiplayer ? "El mundo sigue activo. Volver al menu te desconecta de esta partida."
+                : "La partida esta pausada. Volver al menu termina la expedicion actual.", small);
+            GUILayout.EndArea();
+            GUI.color = previousColor;
             GUI.matrix = previous;
         }
 

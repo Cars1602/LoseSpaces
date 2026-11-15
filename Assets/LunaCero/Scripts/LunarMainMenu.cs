@@ -173,9 +173,9 @@ namespace LunaCero
             switch (manualPage)
             {
                 case 0:
-                    ManualCard(p, 0, "AMENAZAS EN ROJO", "El rombo rojo indica un enemigo. La corona naranja identifica a un jefe. El radar gira contigo: arriba es hacia donde miras.", "Busca cobertura antes de acercarte a un grupo.", LunarRadar.EnemyIcon, new Color(1, 0.3f, 0.25f));
+                    ManualCard(p, 0, "AMENAZAS EN ROJO", "El rombo rojo indica un enemigo. La corona roja identifica a un jefe. El radar gira contigo: arriba es hacia donde miras.", "Busca cobertura antes de acercarte a un grupo.", LunarRadar.EnemyIcon, new Color(1, 0.3f, 0.25f));
                     ManualCard(p, 1, "RECURSOS EN AZUL", "Las cajas azules marcan piezas de la nave. Recogelas y llevalas al engranaje verde de reparacion. Sigue el contador de la mision.", "E: cargar o soltar. Cambiar a un arma suelta la pieza.", LunarRadar.ResourceIcon, cyan);
-                    ManualCard(p, 2, "TU TRIPULACION", "Tu posicion esta en el centro. Las flechas numeradas son tus companeros; su color indica el rol. La lista muestra nombre, distancia y estado.", "Fuera de alcance, los companeros y las piezas quedan en el borde.", LunarRadar.PlayerIcon, new Color(0.5f, 1, 0.7f));
+                    ManualCard(p, 2, "TU TRIPULACION", "Tu posicion esta en el centro. Los simbolos numerados son tus companeros; cada jugador tiene su propio color y forma. La lista muestra nombre, distancia y estado.", "Fuera de alcance, los companeros y las piezas quedan en el borde.", LunarRadar.PlayerIcon, new Color(0.5f, 1, 0.7f));
                     break;
                 case 1:
                     ManualCard(p, 0, "PISTOLA", "Tu arma inicial. Dispara de forma controlada para ahorrar balas y defenderte mientras buscas mejor equipo.", "Clic izquierdo: disparar. R: recargar.", LunarHud.Pistol, amber);

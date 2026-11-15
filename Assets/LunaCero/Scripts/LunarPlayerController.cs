@@ -89,7 +89,6 @@ namespace LunaCero
             if (LunarPlayerRole.MenuOpen) SetCursor(false); // eligiendo rol: el clic es para los botones
             else
             {
-                if (Input.GetKeyDown(KeyCode.Escape)) SetCursor(false);
                 if (Input.GetMouseButtonDown(0)) SetCursor(true);
             }
             if (Cursor.lockState != CursorLockMode.Locked)

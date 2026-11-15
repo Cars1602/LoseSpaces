@@ -25,6 +25,11 @@ namespace LunaCero
         private static Texture2D disc, ring, dot, arrow;
         private enum RadarIcon { Enemy, Boss, Resource, Repair, Weapon, Ammo, Medkit }
         private static Texture2D[] icons;
+        private static Texture2D[] crewIcons;
+        private static readonly Color[] crewColors = {
+            new Color(0.35f, 1f, 1f), new Color(0.8f, 0.65f, 1f),
+            new Color(0.9f, 1f, 0.4f), new Color(1f, 0.65f, 0.9f)
+        };
         public static Texture2D EnemyIcon { get { EnsureTextures(); return icons[(int)RadarIcon.Enemy]; } }
         public static Texture2D ResourceIcon { get { EnsureTextures(); return icons[(int)RadarIcon.Resource]; } }
         public static Texture2D RepairIcon { get { EnsureTextures(); return icons[(int)RadarIcon.Repair]; } }
@@ -119,7 +124,7 @@ namespace LunaCero
                     if (p == null) continue;
                     float halo = 14f + 4f * pulse;
                     Draw(dot, new Rect(p.Value.x - halo / 2, p.Value.y - halo / 2, halo, halo), new Color(1f, 0.25f, 0.05f, 0.35f + 0.25f * pulse));
-                    DrawIcon(RadarIcon.Boss, p.Value, 11, new Color(1f, 0.55f, 0.1f));
+                    DrawIcon(RadarIcon.Boss, p.Value, 11, new Color(1f, 0.3f, 0.35f));
                 }
                 else Blip(enemy.transform.position, toLocal, center, radius, false, 8, new Color(1f, 0.15f, 0.12f), RadarIcon.Enemy);
             }
@@ -154,23 +159,30 @@ namespace LunaCero
                 float distance = offset.magnitude;
                 bool outside = Vector3.ProjectOnPlane(offset, Vector3.up).magnitude > Mathf.Max(1f, range);
                 bool fallen = mate.Health != null && mate.Health.IsDead;
-                Color color = fallen ? new Color(1f, 0.5f, 0.3f) : Color.Lerp(mate.RoleColor, Color.white, 0.3f);
+                int identity = Mathf.Abs(mate.Id % crewColors.Length);
+                Color color = crewColors[identity];
                 Vector2 point = Project(mate.transform.position, toLocal, center, radius, true).Value;
                 Draw(dot, new Rect(point.x - 8, point.y - 8, 16, 16), Color.black);
-                if (outside) Draw(ring, new Rect(point.x - 8, point.y - 8, 16, 16), color);
+                Draw(crewIcons[identity], new Rect(point.x - 7, point.y - 7, 14, 14), color);
+                if (outside) Draw(ring, new Rect(point.x - 9, point.y - 9, 18, 18), color);
                 if (!fallen)
                 {
                     Matrix4x4 before = GUI.matrix;
+                    // RotateAroundPivot conserva GUI.color: restaurarlo evita que el icono quede negro.
+                    GUI.color = Color.white;
                     GUIUtility.RotateAroundPivot(Mathf.DeltaAngle(yaw, mate.transform.eulerAngles.y), point);
-                    Draw(arrow, new Rect(point.x - 6, point.y - 8, 12, 16), color);
+                    Draw(arrow, new Rect(point.x - 2, point.y - 11, 4, 5), color);
                     GUI.matrix = before;
                 }
                 GUI.color = Color.white;
-                markerStyle.normal.textColor = fallen ? color : Color.white;
-                GUI.Label(new Rect(point.x - 9, point.y - 8, 18, 18), fallen ? "X" : (i + 1).ToString(), markerStyle);
+                markerStyle.normal.textColor = Color.white;
+                GUI.Label(new Rect(point.x - 9, point.y - 8, 18, 18), (i + 1).ToString(), markerStyle);
+                if (fallen) Draw(Texture2D.whiteTexture, new Rect(point.x - 5, point.y + 9, 10, 2), color);
                 float rowY = area.yMax + 26 + i * 34;
+                Draw(crewIcons[identity], new Rect(area.x + 4, rowY + 3, 11, 11), color);
+                GUI.color = Color.white;
                 crewStyle.normal.textColor = color;
-                GUI.Label(new Rect(area.x + 6, rowY, size - 12, 17), $"{i + 1}. {mate.DisplayName}", crewStyle);
+                GUI.Label(new Rect(area.x + 19, rowY, size - 23, 17), $"{i + 1}. {mate.DisplayName}", crewStyle);
                 string height = offset.y > 3f ? " | ARRIBA" : offset.y < -3f ? " | ABAJO" : "";
                 string state = fallen ? " | CAIDO" : outside ? " | FUERA" : "";
                 crewStyle.normal.textColor = Color.white;
@@ -230,6 +242,25 @@ namespace LunaCero
             arrow.Apply();
             icons = new Texture2D[7];
             for (int i = 0; i < icons.Length; i++) icons[i] = CreateIcon((RadarIcon)i);
+            crewIcons = new Texture2D[4];
+            for (int i = 0; i < crewIcons.Length; i++) crewIcons[i] = CreateCrewIcon(i);
+        }
+
+        private static Texture2D CreateCrewIcon(int identity)
+        {
+            var texture = new Texture2D(48, 48, TextureFormat.RGBA32, false)
+                { wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.DontSave, filterMode = FilterMode.Bilinear };
+            for (int y = 0; y < 48; y++)
+                for (int x = 0; x < 48; x++)
+                {
+                    float u = Mathf.Abs((x + 0.5f) / 24f - 1f), v = Mathf.Abs((y + 0.5f) / 24f - 1f);
+                    float distance = identity == 0 ? Mathf.Sqrt(u * u + v * v)
+                        : identity == 1 ? Mathf.Max(u, v)
+                        : identity == 2 ? (u + v) * 0.72f : Mathf.Max(Mathf.Max(u, v) * 0.85f, (u + v) * 0.6f);
+                    texture.SetPixel(x, y, distance > 0.62f && distance < 0.94f ? Color.white : Color.clear);
+                }
+            texture.Apply();
+            return texture;
         }
 
         // Simbolos geometricos simples, sin fuentes ni archivos externos; se crean una sola vez.

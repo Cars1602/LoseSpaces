@@ -92,7 +92,7 @@ namespace LunaCero
         private static bool menuOpen;
         private bool ownsMenu;
         /// <summary>Hay una pantalla a pantalla completa (roles o menu de sala): sin controles del juego.</summary>
-        public static bool MenuOpen => menuOpen || LunarMainMenu.ManualOpen || LunarSession.Deciding || LunarSession.WaitingForMatch;
+        public static bool MenuOpen => menuOpen || LunarMainMenu.ManualOpen || LunarSession.Deciding || LunarSession.WaitingForMatch || LunarSession.PauseMenuOpen;
         public static bool ChoosingRole => menuOpen;
         private float protectedUntil;
         public float ProtectionSeconds => Mathf.Max(0f, protectedUntil - Time.unscaledTime);
