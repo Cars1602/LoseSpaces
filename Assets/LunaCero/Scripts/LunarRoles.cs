@@ -89,7 +89,9 @@ namespace LunaCero
     public sealed class LunarPlayerRole : MonoBehaviour
     {
         public static LunarRole? Chosen;
-        public static bool MenuOpen { get; private set; }
+        private static bool menuOpen;
+        /// <summary>Hay una pantalla a pantalla completa (roles o menu de sala): sin controles del juego.</summary>
+        public static bool MenuOpen => menuOpen || LunarSession.Deciding;
         [SerializeField] private LunarRole role = LunarRole.Militar;
         [Tooltip("Mostrar la eleccion de rol al empezar la partida")]
         public bool askOnStart = true;
@@ -113,8 +115,15 @@ namespace LunaCero
         private void Start()
         {
             // Las pruebas automaticas juegan sin rol (valores neutros) para no alterar sus comprobaciones.
-            bool automated = Application.isBatchMode || FindObjectOfType<LunarCombatSmokeTest>() != null || FindObjectOfType<LunarSurvivalSmokeTest>() != null;
+            bool automated = LunarAutomation.Running;
             if (automated) return;
+            StartCoroutine(AskWhenReady());
+        }
+
+        // Primero se elige como jugar (solo / LAN / online) y despues el rol.
+        private System.Collections.IEnumerator AskWhenReady()
+        {
+            while (LunarSession.Deciding) yield return null;
             if (Chosen.HasValue) Choose(Chosen.Value);
             else if (askOnStart) OpenMenu();
             else Choose(role);
@@ -122,8 +131,8 @@ namespace LunaCero
 
         public void OpenMenu()
         {
-            MenuOpen = true;
-            Time.timeScale = 0f;
+            menuOpen = true;
+            if (!LunarSession.InMultiplayer) Time.timeScale = 0f; // en red el mundo sigue para los demas
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
@@ -133,9 +142,9 @@ namespace LunaCero
             role = value;
             Chosen = value;
             HasRole = true;
-            if (MenuOpen)
+            if (menuOpen)
             {
-                MenuOpen = false;
+                menuOpen = false;
                 Time.timeScale = 1f;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -145,7 +154,7 @@ namespace LunaCero
 
         private void Update()
         {
-            if (MenuOpen)
+            if (menuOpen)
             {
                 for (int i = 0; i < LunarRoleDefinition.All.Length; i++)
                     if (Input.GetKeyDown(KeyCode.Alpha1 + i) || Input.GetKeyDown(KeyCode.Keypad1 + i)) { Choose(LunarRoleDefinition.All[i].role); break; }
@@ -159,12 +168,12 @@ namespace LunaCero
 
         private void OnDestroy()
         {
-            if (MenuOpen) { MenuOpen = false; Time.timeScale = 1f; }
+            if (menuOpen) { menuOpen = false; Time.timeScale = 1f; }
         }
 
         private void OnGUI()
         {
-            if (!MenuOpen) return;
+            if (!menuOpen) return;
             EnsureStyles();
             float scale = Mathf.Max(0.5f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
             Matrix4x4 previous = GUI.matrix;

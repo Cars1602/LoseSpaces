@@ -30,7 +30,7 @@ namespace LunaCero
         public int Kills { get; private set; }
         public int StationsReached => stations.Count;
         public int BossKindsDefeated => defeatedBosses.Count;
-        public int ActiveEnemies => enemies.Count(enemy => enemy != null && !enemy.IsDead);
+        public int ActiveEnemies => remote ? remoteActive : enemies.Count(enemy => enemy != null && !enemy.IsDead);
         private readonly List<LunarEnemy> enemies = new List<LunarEnemy>();
         private readonly HashSet<string> stations = new HashSet<string>();
         private readonly HashSet<LunarAlienKind> defeatedBosses = new HashSet<LunarAlienKind>();
@@ -50,12 +50,37 @@ namespace LunaCero
             nextPatrol = Time.time + 10;
         }
 
+        // ---------------------------------------------------------------- Multijugador
+        /// <summary>Cliente en red: no genera monstruos; muestra lo que envia el anfitrion.</summary>
+        [System.NonSerialized] public bool remote;
+        private int remoteActive;
+        public void ApplyRemote(int wave, int kills, int active, float nextIn, string text)
+        {
+            Wave = wave;
+            Kills = kills;
+            remoteActive = active;
+            nextWave = Time.time + nextIn;
+            if (!string.IsNullOrEmpty(text) && text != announcement) Announce(text);
+        }
+        public float NextWaveIn => Mathf.Max(0f, nextWave - Time.time);
+        public string Announcement => Time.time < announceUntil ? announcement : "";
+        public int PrefabIndex(GameObject prefab)
+        {
+            if (prefab == commonPrefab) return 0;
+            int index = System.Array.IndexOf(specialPrefabs, prefab);
+            return index >= 0 ? index + 1 : -1;
+        }
+        public GameObject PrefabAt(int index) => index == 0 ? commonPrefab : index > 0 && index <= specialPrefabs.Length ? specialPrefabs[index - 1] : null;
+        /// <summary>Tripulante alrededor del cual aparece la siguiente horda (se reparte entre los jugadores).</summary>
+        private Transform anchor;
+
         private void Update()
         {
-            if (player == null || player.GetComponent<LunarHealth>().IsDead || !NavigationReady) return;
+            if (remote || player == null || !NavigationReady) return;
+            if (!LunarCrew.AnyAlive && player.GetComponent<LunarHealth>().IsDead) return;
             enemies.RemoveAll(enemy => enemy == null);
             foreach (var enemy in enemies.ToArray())
-                if (Vector3.Distance(enemy.transform.position, player.transform.position) > 100) { enemies.Remove(enemy); Destroy(enemy.gameObject); }
+                if (LunarCrew.NearestDistance(enemy.transform.position) > 100 && Vector3.Distance(enemy.transform.position, player.transform.position) > 100) { enemies.Remove(enemy); Destroy(enemy.gameObject); }
             if (Time.time >= nextWave)
             {
                 Wave++;
@@ -102,7 +127,7 @@ namespace LunaCero
         {
             if (ActiveEnemies < maximumEnemies) return;
             var distant = enemies.Where(enemy => enemy != null && enemy.alienKind == LunarAlienKind.Common)
-                .OrderByDescending(enemy => Vector3.Distance(enemy.transform.position, player.transform.position)).FirstOrDefault();
+                .OrderByDescending(enemy => LunarCrew.NearestDistance(enemy.transform.position)).FirstOrDefault();
             if (distant != null) { enemies.Remove(distant); Destroy(distant.gameObject); }
         }
 
@@ -163,7 +188,7 @@ namespace LunaCero
                 foreach (var point in spawnPoints)
                 {
                     if (point == null) continue;
-                    float distance = Vector3.Distance(point.position, player.transform.position);
+                    float distance = Vector3.Distance(point.position, anchor.position);
                     if (distance < minimumSpawnDistance || (maximumSpawnDistance > 0 && distance > maximumSpawnDistance)) continue;
                     eligible.Add(point);
                 }
@@ -175,20 +200,25 @@ namespace LunaCero
                 }
             }
             float angle = Random.value * Mathf.PI * 2;
-            return player.transform.position + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * Random.Range(22f, 34f);
+            return anchor.position + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * Random.Range(22f, 34f);
         }
 
         public LunarEnemy Spawn(GameObject prefab)
         {
-            if (prefab == null || player == null || ActiveEnemies >= maximumEnemies) return null;
+            if (remote || prefab == null || player == null || ActiveEnemies >= maximumEnemies) return null;
+            var member = LunarCrew.RandomAlive();
+            anchor = member != null ? member.transform : player.transform;
             for (int attempt = 0; attempt < 16; attempt++)
             {
                 Vector3 wanted = SpawnCandidate();
                 if (!NavMesh.SamplePosition(wanted, out var hit, 4, NavMesh.AllAreas)) continue;
+                // Ningun jugador debe ver aparecer un monstruo a su lado.
+                if (LunarCrew.NearestDistance(hit.position) < minimumSpawnDistance * 0.7f) continue;
                 var path = new NavMeshPath();
-                if (!NavMesh.CalculatePath(hit.position, player.transform.position, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;
+                if (!NavMesh.CalculatePath(hit.position, anchor.position, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;
                 var instance = Instantiate(prefab, hit.position, Quaternion.identity);
                 var enemy = instance.GetComponent<LunarEnemy>();
+                enemy.NetPrefab = PrefabIndex(prefab);
                 enemy.relentless = true;
                 enemies.Add(enemy);
                 return enemy;

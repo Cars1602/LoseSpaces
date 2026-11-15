@@ -24,10 +24,13 @@ namespace LunaCero
             if (busy || Time.time < staggerUntil) { Stop(); return true; }
             if (alienKind == LunarAlienKind.Dormant && !awakened)
             {
-                var player = target.GetComponent<LunarPlayerCombat>();
-                var status = target.GetComponent<LunarPlayerStatus>();
-                Vector3 toward = (transform.position + Vector3.up - player.AimCamera.transform.position).normalized;
-                bool lit = status != null && status.FlashlightOn && distance < 14 && Vector3.Dot(player.AimCamera.transform.forward, toward) > 0.9f && CanSeeTarget();
+                // Despierta si lo alumbra la linterna (solo se comprueba con el astronauta local del anfitrion).
+                bool lit = false;
+                if (target.TryGetComponent(out LunarPlayerCombat player) && player.AimCamera != null && target.TryGetComponent(out LunarPlayerStatus status))
+                {
+                    Vector3 toward = (transform.position + Vector3.up - player.AimCamera.transform.position).normalized;
+                    lit = status.FlashlightOn && distance < 14 && Vector3.Dot(player.AimCamera.transform.forward, toward) > 0.9f && CanSeeTarget();
+                }
                 if (distance < 3.8f || health.Current < health.Maximum || lit)
                 {
                     awakened = true;
@@ -113,7 +116,7 @@ namespace LunaCero
             if (alienKind == LunarAlienKind.Brute)
             {
                 Vector3 direction = (target.transform.position - transform.position).normalized;
-                target.GetComponent<LunarPlayerStatus>()?.Knockback(direction * 9f + Vector3.up * 3f);
+                if (target.TryGetComponent(out LunarPlayerStatus knocked)) knocked.Knockback(direction * 9f + Vector3.up * 3f);
                 foreach (var collider in Physics.OverlapSphere(transform.position + transform.forward, 3f))
                 {
                     var body = collider.attachedRigidbody;
@@ -156,7 +159,7 @@ namespace LunaCero
                 bool blocked = false;
                 foreach (var hit in Physics.SphereCastAll(transform.position + Vector3.up * 0.7f, 0.35f, step.normalized, step.magnitude, ~0, QueryTriggerInteraction.Ignore))
                 {
-                    if (hit.collider.transform.IsChildOf(transform) || hit.collider.GetComponentInParent<LunarPlayerCombat>() != null) continue;
+                    if (hit.collider.transform.IsChildOf(transform) || LunarCrew.IsCrew(hit.collider.GetComponentInParent<LunarHealth>())) continue;
                     if (hit.normal.y > 0.6f) continue;
                     blocked = true;
                     break;
@@ -201,8 +204,8 @@ namespace LunaCero
 
         private IEnumerator CapturedAttack(LunarControlEffect effect, float seconds, Vector3 direction)
         {
-            var status = target.GetComponent<LunarPlayerStatus>();
-            if (status == null || !status.Capture(this, effect, seconds, direction)) yield break;
+            // Los astronautas de otros jugadores no tienen estado de captura: solo reciben el dano.
+            if (!target.TryGetComponent(out LunarPlayerStatus status) || !status.Capture(this, effect, seconds, direction)) yield break;
             busy = true;
             Stop();
             bool attached = effect == LunarControlEffect.Ride || effect == LunarControlEffect.Charge;
@@ -240,8 +243,9 @@ namespace LunaCero
 
         public bool Stagger(float seconds)
         {
+            if (StaggerRedirect != null) { StaggerRedirect(seconds); return true; } // copia de red
             if (IsDead || alienKind == LunarAlienKind.Brute || alienKind == LunarAlienKind.Charger) return false;
-            if (target != null && target.GetComponent<LunarPlayerStatus>()?.Captor == this) target.GetComponent<LunarPlayerStatus>().Release();
+            if (target != null && target.TryGetComponent(out LunarPlayerStatus held) && held.Captor == this) held.Release();
             StopAllCoroutines();
             busy = false;
             staggerUntil = Time.time + seconds;
@@ -255,7 +259,7 @@ namespace LunaCero
         private void SpecialDeath()
         {
             if (target == null) return;
-            var status = target.GetComponent<LunarPlayerStatus>();
+            target.TryGetComponent(out LunarPlayerStatus status);
             if (status != null && status.Captor == this) status.Release();
             if (alienKind == LunarAlienKind.Bile && status != null && Vector3.Distance(transform.position, target.transform.position) < 6 && CanSeeTarget()) status.ApplyBile(10);
             if (alienKind == LunarAlienKind.Tongue) LunarHazardZone.Create(transform.position, true, 4);

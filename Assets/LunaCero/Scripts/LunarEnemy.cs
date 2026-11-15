@@ -26,6 +26,8 @@ namespace LunaCero
         public float Reach { get; private set; }
         public float BodyHeight { get; private set; } = 2f;
         private static Camera viewCamera;
+        /// <summary>Barras de vida sobre los monstruos (apagadas; pon true para depurar).</summary>
+        public static bool ShowHealthBars = false;
 
         private void Awake()
         {
@@ -41,10 +43,48 @@ namespace LunaCero
             }
         }
 
+        // ---------------------------------------------------------------- Multijugador
+        /// <summary>Monstruos con IA activa (en el anfitrion o en solitario). Las copias de red no estan aqui.</summary>
+        public static readonly System.Collections.Generic.List<LunarEnemy> All = new System.Collections.Generic.List<LunarEnemy>();
+        /// <summary>Indice del prefab en el director (para crear la copia en los clientes). -1 = no se replica.</summary>
+        [System.NonSerialized] public int NetPrefab = -1;
+        [System.NonSerialized] public uint NetId;
+        /// <summary>Copia de red: el aturdimiento se envia al anfitrion en lugar de aplicarse aqui.</summary>
+        public System.Action<float> StaggerRedirect;
+        private float nextRetarget;
+        private void OnEnable() { All.Add(this); }
+        private void OnDisable() { All.Remove(this); }
+
+        /// <summary>Copia de red: muestra la muerte que decidio el anfitrion.</summary>
+        public void ShowRemoteDeath()
+        {
+            foreach (var collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
+            bool animated = false;
+            if (TryGetComponent(out LunarAlienAnimation alienAnimation)) { alienAnimation.Die(); animated = alienAnimation.HasDeath; }
+            var rider = GetComponent<LunarRiderAnimation>();
+            if (rider != null) rider.Die();
+            else if (!animated) { var visual = transform.Find("Visual"); if (visual != null) visual.localRotation = Quaternion.Euler(0, 0, 85); }
+            Destroy(gameObject, alienAnimation != null && animated ? Mathf.Max(4f, alienAnimation.deathDuration) : 4f);
+        }
+
+        /// <summary>El tripulante vivo mas cercano (cualquier jugador). No cambia mientras ataca.</summary>
+        private void Retarget()
+        {
+            if (Time.time < nextRetarget && target != null && !target.IsDead) return;
+            nextRetarget = Time.time + 0.6f;
+            if (busy) return;
+            var nearest = LunarCrew.Nearest(transform.position);
+            if (nearest == null)
+            {
+                var player = FindObjectOfType<LunarPlayerCombat>();
+                if (player != null) nearest = player.GetComponent<LunarHealth>();
+            }
+            if (nearest != null) target = nearest;
+        }
+
         private void Start()
         {
-            var player = FindObjectOfType<LunarPlayerCombat>();
-            if (player != null) target = player.GetComponent<LunarHealth>();
+            Retarget();
             nextAttack = Time.time + 3f;
             nextAbility = Time.time + 2f;
             if (NavMesh.SamplePosition(transform.position, out var hit, 3f, NavMesh.AllAreas))
@@ -58,6 +98,7 @@ namespace LunaCero
 
         private void Update()
         {
+            if (!health.IsDead) Retarget();
             if (health.IsDead || target == null || target.IsDead || !agent.enabled || !agent.isOnNavMesh) { Stop(); return; }
             float distance = Vector3.Distance(transform.position, target.transform.position);
             if (SpecialUpdate(distance)) return;
@@ -146,7 +187,8 @@ namespace LunaCero
 
         private void OnGUI()
         {
-            if (Event.current.type != EventType.Repaint || health == null || health.IsDead || LunarPlayerRole.MenuOpen) return;
+            // Barras de vida desactivadas: el jugador solo ve al monstruo (el impacto se indica con la mira roja).
+            if (!ShowHealthBars || Event.current.type != EventType.Repaint || health == null || health.IsDead || LunarPlayerRole.MenuOpen) return;
             if (viewCamera == null || !viewCamera.isActiveAndEnabled) viewCamera = Camera.main;
             if (viewCamera == null) return;
             // Solo los cercanos (o jefes) muestran barra: menos trabajo de interfaz con muchas criaturas.

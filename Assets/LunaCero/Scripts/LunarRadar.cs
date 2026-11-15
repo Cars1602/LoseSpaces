@@ -33,6 +33,8 @@ namespace LunaCero
             enemies.Clear(); enemies.AddRange(FindObjectsOfType<LunarEnemy>());
             parts.Clear(); parts.AddRange(FindObjectsOfType<LunarShipPart>());
             if (repair == null) repair = FindObjectOfType<LunarRepairPoint>();
+            crew.Clear();
+            if (LunarSession.InMultiplayer) crew.AddRange(FindObjectsOfType<LunarPuppet>());
             var definition = LunarPlayerRole.Of(this);
             range = definition.radarRange;
             showLoot = definition.radarLoot;
@@ -44,6 +46,7 @@ namespace LunaCero
         }
 
         private readonly List<LunarPickup> loot = new List<LunarPickup>();
+        private readonly List<LunarPuppet> crew = new List<LunarPuppet>();
         private bool showLoot;
 
         private void OnGUI()
@@ -103,6 +106,9 @@ namespace LunaCero
                 }
                 else Blip(enemy.transform.position, toLocal, center, radius, false, 7, new Color(1f, 0.15f, 0.12f));
             }
+            // Companeros de la tripulacion (multijugador): celestes, siempre visibles en el borde.
+            foreach (var mate in crew)
+                if (mate != null) Blip(mate.transform.position, toLocal, center, radius, true, 9, new Color(0.4f, 1f, 1f));
             // Jugador
             Draw(dot, new Rect(center.x - 4, center.y - 4, 8, 8), Color.white);
             Draw(Texture2D.whiteTexture, new Rect(center.x - 1, center.y - 12, 2, 8), Color.white);

@@ -34,10 +34,17 @@ namespace LunaCero
             }
         }
 
+        /// <summary>Multijugador: el anfitrion envia cada zona a los clientes (cada uno evalua a su astronauta).</summary>
+        public static event System.Action<Vector3, bool, float> Created;
+
         public static LunarHazardZone Create(Vector3 position, bool smoke, float radius = 4f)
         {
+            Created?.Invoke(position, smoke, radius);
             var root = new GameObject(smoke ? "Nube de humo" : "Charco de acido");
-            root.transform.position = new Vector3(position.x, 0.04f, position.z);
+            // A la altura del suelo donde cae (el mapa grande tiene relieve).
+            Vector3 ground = position;
+            if (Physics.Raycast(position + Vector3.up * 2f, Vector3.down, out var floor, 8f, ~0, QueryTriggerInteraction.Ignore)) ground = floor.point;
+            root.transform.position = ground + Vector3.up * 0.04f;
             var hazard = root.AddComponent<LunarHazardZone>();
             hazard.smoke = smoke;
             hazard.radius = radius;

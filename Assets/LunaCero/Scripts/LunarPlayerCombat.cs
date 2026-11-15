@@ -90,6 +90,7 @@ namespace LunaCero
             weapons.Add(new LunarWeaponSlot(CreatePistol(), initialReserveAmmo));
             Equip(0, false);
             health.Died += OnDeath;
+            LunarCrew.Add(health);
         }
 
         private void OnValidate()
@@ -243,7 +244,9 @@ namespace LunaCero
         {
             if (health.IsDead)
             {
-                if (Input.GetKeyDown(KeyCode.C)) { LunarPlayerRole.Chosen = null; SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); }
+                // En red no se recarga el mapa (se perderia la partida de todos): se reaparece en la base.
+                if (LunarSession.InMultiplayer) { if (Input.GetKeyDown(KeyCode.Return)) Revive(); }
+                else if (Input.GetKeyDown(KeyCode.C)) { LunarPlayerRole.Chosen = null; SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); }
                 else if (Input.GetKeyDown(KeyCode.Return)) SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                 return;
             }
@@ -321,7 +324,7 @@ namespace LunaCero
                 if (held != null && hit.collider.transform.IsChildOf(held.transform)) continue;
                 Vector3 point = hit.distance <= 0f ? hit.collider.ClosestPoint(origin) : hit.point;
                 var victim = hit.collider.GetComponentInParent<LunarHealth>();
-                if (victim != null && victim != health)
+                if (victim != null && !LunarCrew.IsCrew(victim) && victim != health)
                 {
                     victim.Damage(data.damage * RoleDef.damage);
                     if (victim.TryGetComponent(out LunarEnemy enemy) && !enemy.IsDead) enemy.Stagger(data.stagger);
@@ -354,7 +357,7 @@ namespace LunaCero
         private void HitSingle(RaycastHit hit, Vector3 direction, float amount)
         {
             var victim = hit.collider.GetComponentInParent<LunarHealth>();
-            if (victim != null && victim != health)
+            if (victim != null && !LunarCrew.IsCrew(victim) && victim != health)
             {
                 victim.Damage(amount);
                 hitUntil = Time.time + 0.15f;
@@ -371,7 +374,7 @@ namespace LunaCero
             {
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 var victim = hit.collider.GetComponentInParent<LunarHealth>();
-                if (victim == null || victim == health) { HitSingle(hit, shot.direction, 0); end = hit.point; break; }
+                if (victim == null || victim == health || LunarCrew.IsCrew(victim)) { HitSingle(hit, shot.direction, 0); end = hit.point; break; }
                 if (!damaged.Add(victim)) continue;
                 victim.Damage(amount);
                 hitUntil = Time.time + 0.15f;
@@ -387,7 +390,7 @@ namespace LunaCero
             {
                 if (collider.transform.IsChildOf(transform)) continue;
                 var victim = collider.GetComponentInParent<LunarHealth>();
-                if (victim != null && victim != health && damaged.Add(victim))
+                if (victim != null && !LunarCrew.IsCrew(victim) && victim != health && damaged.Add(victim))
                 {
                     float distance = Vector3.Distance(point, collider.ClosestPoint(point));
                     victim.Damage(amount * Mathf.Lerp(1f, 0.35f, distance / data.explosionRadius));
@@ -567,6 +570,21 @@ namespace LunaCero
             return true;
         }
 
+        /// <summary>Multijugador: vuelve a la base con vida, oxigeno y energia, conservando las armas.</summary>
+        public void Revive()
+        {
+            if (!health.IsDead) return;
+            health.Revive();
+            if (vitals != null) vitals.Refill();
+            movement.enabled = true;
+            movement.Respawn();
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            Tell("Has reaparecido en la base.");
+        }
+
+        private void OnDestroy() { LunarCrew.Remove(health); }
+
         private void OnDeath(LunarHealth dead)
         {
             Drop(false);
@@ -706,7 +724,9 @@ namespace LunaCero
             string prompt = held != null ? "E: soltar | G: lanzar " + held.displayName : nearby != null ? $"E: {nearby.verb} {nearby.displayName}" : "";
             if (prompt.Length > 0) GUI.Label(new Rect(width / 2 - 250, height - 90, 500, 25), prompt, centerStyle);
             if (Time.time < messageUntil) GUI.Label(new Rect(width / 2 - 250, height - 60, 500, 25), message, centerStyle);
-            if (health.IsDead) GUI.Box(new Rect(width / 2 - 180, height / 2 - 50, 360, 100), "HAS MUERTO\n\nEnter: reiniciar con el mismo rol\nC: elegir otro rol");
+            if (health.IsDead) GUI.Box(new Rect(width / 2 - 180, height / 2 - 50, 360, 100), LunarSession.InMultiplayer
+                ? "HAS MUERTO\n\nEnter: reaparecer en la base\n(tus companeros siguen jugando)"
+                : "HAS MUERTO\n\nEnter: reiniciar con el mismo rol\nC: elegir otro rol");
             GUI.matrix = original;
         }
 

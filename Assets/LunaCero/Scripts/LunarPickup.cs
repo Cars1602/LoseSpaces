@@ -51,13 +51,30 @@ namespace LunaCero
             visual.transform.localScale = new Vector3(1f / Mathf.Max(0.001f, Mathf.Abs(scale.x)), 1f / Mathf.Max(0.001f, Mathf.Abs(scale.y)), 1f / Mathf.Max(0.001f, Mathf.Abs(scale.z)));
         }
 
+        // ---------------------------------------------------------------- Multijugador
+        /// <summary>
+        /// Cliente en red: antes de recoger se pide permiso al anfitrion (dos jugadores no pueden
+        /// llevarse la misma arma). Devuelve true si la peticion se envio y hay que esperar.
+        /// </summary>
+        public static System.Func<LunarPickup, LunarPlayerCombat, bool> RequestUse;
+        /// <summary>Se avisa al consumir, cargar o soltar un objeto (para enviarlo a los demas).</summary>
+        public static System.Action<LunarPickup> Consumed, Held, Released;
+        /// <summary>El anfitrion ya concedio este objeto: se usa sin volver a preguntar.</summary>
+        [System.NonSerialized] public bool Granted;
+        [System.NonSerialized] public int NetId = -1;
+        public bool IsShared => kind != LunarPickupKind.AmmoLocker;
+
         public bool Use(LunarPlayerCombat player)
         {
             if (player == null || !player.CanAct || IsHeld) return false;
+            if (!Granted && IsShared && RequestUse != null && RequestUse(this, player)) return false;
+            Granted = false;
             switch (kind)
             {
                 case LunarPickupKind.Carryable:
-                    return player.PickUp(this);
+                    bool carried = player.PickUp(this);
+                    if (carried) Held?.Invoke(this);
+                    return carried;
                 case LunarPickupKind.AmmoLocker:
                     if (Time.time < ReadyAt) { player.Notify($"Casillero recargandose: {Mathf.CeilToInt(ReadyAt - Time.time)} s"); return false; }
                     if (!player.RefillAllWeapons()) return false;
@@ -85,6 +102,7 @@ namespace LunaCero
                     break;
             }
             if (!string.IsNullOrEmpty(persistenceKey)) FindObjectOfType<LunarEndlessWorld>()?.MarkCollected(persistenceKey);
+            Consumed?.Invoke(this);
             Destroy(gameObject);
             return true;
         }
@@ -161,7 +179,28 @@ namespace LunaCero
                 body.useGravity = originalGravity;
                 if (!body.isKinematic) body.velocity = velocity;
             }
+            LastReleaseVelocity = velocity;
+            Released?.Invoke(this);
         }
+        public Vector3 LastReleaseVelocity { get; private set; }
+
+        /// <summary>Red: otro jugador lo lleva (se oculta) o lo solto (vuelve a verse y a colisionar).</summary>
+        public void SetRemoteHeld(bool heldByOther)
+        {
+            foreach (var r in GetComponentsInChildren<Renderer>()) r.enabled = !heldByOther;
+            foreach (var c in colliders) if (c != null) c.enabled = !heldByOther;
+            if (body != null) body.isKinematic = heldByOther || ForceKinematic; // sin colision no debe caer
+            RemotelyHeld = heldByOther;
+        }
+        /// <summary>Clientes: la fisica de las piezas la simula el anfitrion; aqui solo se colocan.</summary>
+        public bool ForceKinematic
+        {
+            get => forceKinematic;
+            set { forceKinematic = value; if (body != null && !IsHeld) body.isKinematic = value; }
+        }
+        private bool forceKinematic;
+        public Rigidbody Body => body;
+        public bool RemotelyHeld { get; private set; }
     }
 }
 

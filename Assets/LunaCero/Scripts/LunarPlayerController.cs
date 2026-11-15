@@ -170,6 +170,13 @@ namespace LunaCero
             return false;
         }
 
+        /// <summary>Multijugador: cada jugador aparece en un sitio distinto junto a la base.</summary>
+        public void SetSpawn(Vector3 position)
+        {
+            spawnPosition = position;
+            Respawn();
+        }
+
         public void Respawn()
         {
             body.velocity = Vector3.zero;

@@ -41,8 +41,14 @@ namespace LunaCero
             if (hips != null) hipsRest = animator.transform.InverseTransformPoint(hips.position);
         }
 
+        /// <summary>Multijugador: cuenta los ataques para repetirlos en las copias de los clientes.</summary>
+        public int AttackCount { get; private set; }
+        /// <summary>Copias de red: velocidad recibida del anfitrion (negativa = usar el agente).</summary>
+        [System.NonSerialized] public float ExternalSpeed = -1f;
+
         public void Attack()
         {
+            AttackCount++;
             if (dead || animator == null) return;
             attackUntil = Time.time + attackDuration;
             animator.speed = 1;
@@ -71,7 +77,7 @@ namespace LunaCero
                 animator.CrossFadeInFixedTime(moveState, 0.12f);
                 current = moveState;
             }
-            float speed = agent != null && agent.enabled && agent.isOnNavMesh ? agent.velocity.magnitude : 0f;
+            float speed = ExternalSpeed >= 0f ? ExternalSpeed : agent != null && agent.enabled && agent.isOnNavMesh ? agent.velocity.magnitude : 0f;
             animator.speed = speed > 0.2f ? Mathf.Clamp(speed / referenceSpeed, 0.6f, 1.6f) : enemy != null && enemy.IsBusy ? 1f : 0.15f;
         }
 

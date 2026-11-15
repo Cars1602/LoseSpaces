@@ -19,9 +19,22 @@ namespace LunaCero
         public int Installed => installed.Count;
         public bool Repaired => installed.Count >= requiredParts;
 
+        /// <summary>Cliente en red: las piezas las instala el anfitrion (se recibe con ApplyInstalled).</summary>
+        [System.NonSerialized] public bool remote;
+        public System.Collections.Generic.IReadOnlyList<LunarShipPart> InstalledParts => installed;
+
+        public void ApplyInstalled(LunarShipPart part, Vector3 position, Quaternion rotation)
+        {
+            if (part == null || installed.Contains(part)) return;
+            installed.Add(part);
+            part.Install(position, rotation);
+            message = Repaired ? "NAVE REPARADA! Has recuperado las cinco piezas." : $"Pieza instalada: {part.partName} ({installed.Count}/{requiredParts})";
+            messageUntil = Time.time + 4f;
+        }
+
         private void Update()
         {
-            if (Repaired) return;
+            if (Repaired || remote) return;
             foreach (var collider in Physics.OverlapSphere(transform.position, radius, ~0, QueryTriggerInteraction.Ignore))
             {
                 var part = collider.GetComponentInParent<LunarShipPart>();

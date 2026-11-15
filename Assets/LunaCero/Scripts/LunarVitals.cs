@@ -122,5 +122,14 @@ namespace LunaCero
         }
 
         public void AddOxygen(float amount) { Oxygen = Mathf.Clamp(Oxygen + amount, 0f, maxOxygen); }
+
+        /// <summary>Al reaparecer en multijugador: tanques llenos.</summary>
+        public void Refill()
+        {
+            Oxygen = maxOxygen;
+            Stamina = MaxStamina;
+            Fuel = MaxFuel;
+            Exhausted = false;
+        }
     }
 }

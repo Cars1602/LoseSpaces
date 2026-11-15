@@ -4,6 +4,28 @@ La escena principal es `Assets/LunaCero/Scenes/LunaCeroMapaGrande.unity` (mapa g
 primera en Build Settings). Se conservan `LunaCeroEscenario.unity` (mapa pequeno), la expedicion
 procedural `LunaCeroSurvival.unity` y la arena anterior para probar combate aislado.
 
+## Multijugador (2 a 4 jugadores, LAN u online con AWS)
+
+Al empezar sale el menu: **Jugar solo**, **LAN** (crear sala o unirse por lista/IP) u **Online**
+(crear sala o unirse desde la lista del servidor 107.23.18.43). Despues cada uno elige su rol.
+
+- Quien crea la sala es el **anfitrion**: su PC simula monstruos, hordas, objetos y piezas.
+  Cada jugador mueve a su astronauta; disparos, golpes y recogidas se envian al anfitrion.
+- Todos se conectan a un **relevo** que reenvia los paquetes. En LAN va dentro del juego del
+  anfitrion (UDP 7778; busqueda de salas UDP 47778). Online es `Server/relay.py` en AWS, lanzado
+  por el servicio `cubos-online` con el perfil `losesspaces-4` (UDP 7800-7803, API HTTPS 443 con
+  certificado fijado por huella). No hace falta compilar el juego para Linux.
+- Se puede entrar con la partida empezada (hasta 4). Si el anfitrion sale, la sala se cierra.
+  F10 sale de la sala. Al morir en red, Enter reaparece en la base sin reiniciar el mapa.
+- Los monstruos persiguen al tripulante mas cercano; no hay fuego amigo. Los companeros salen
+  en el radar (celeste) con su nombre y rol sobre la cabeza.
+- Scripts: `Scripts/Net/LunarNet.cs` (UDP, relevo LAN, mensajes fiables), `LunarSession.cs` (menu,
+  API de salas), `LunarCoop.cs` (sincronizacion), `LunarPuppet.cs` (astronautas remotos), `LunarCrew.cs`.
+- Limitaciones: los agarres especiales (lengua, montarse, embestida) solo atrapan al anfitrion; a los
+  demas solo les hacen dano. Todos deben usar la misma compilacion y el mismo mapa.
+- Actualizar el relevo en AWS: copiar `Server/relay.py` a `/opt/cubos-online/lunar-relay/relay.py`.
+  Copia del gestor anterior: `/opt/cubos-online/lobby-before-relay.py`.
+
 ## Mapa grande (Assets/esenario2)
 
 - `esenario2/esenario/MapaGrande.unity` usa un terreno, prefabs de rocas/piezas y scripts que no
