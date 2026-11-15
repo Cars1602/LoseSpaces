@@ -118,6 +118,7 @@ namespace LunaCero
 
         // ------------------------------------------------------------ progreso visible de la reparacion
         private Renderer[] sections = new Renderer[0];
+        public LunarShipVisual ShipVisual { get; private set; }
         private ParticleSystem smoke, sparks;
         private Light statusLight;
         private int shownInstalled = -1;
@@ -128,7 +129,8 @@ namespace LunaCero
             if (!LunarAutomation.Running && !LunarSession.InMultiplayer && !LunarSession.Deciding) SetMissionPlayers(1);
             hasDirector = FindObjectOfType<LunarHordeDirector>() != null;
             // Holograma de la nave Condor sobre el anillo: una seccion por cada pieza del catalogo.
-            sections = LunarShipRebuild.BuildFrame(transform);
+            ShipVisual = LunarShipVisual.Create(transform);
+            if (ShipVisual == null) sections = LunarShipRebuild.BuildFrame(transform);
             // Humo y chispas sobre la nave: disminuyen con cada pieza instalada.
             var ship = GameObject.Find("Nave_Proa");
             Vector3 wreck = ship != null ? ship.transform.position + Vector3.up * 1.5f : transform.position + Vector3.up * 2f;
@@ -180,6 +182,7 @@ namespace LunaCero
         {
             shownInstalled = installed.Count;
             float done = installed.Count / (float)Mathf.Max(1, requiredParts);
+            if (ShipVisual != null) ShipVisual.SetProgress(done);
             var filled = new HashSet<int>();
             foreach (var part in installed)
             {

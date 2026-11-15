@@ -36,27 +36,60 @@ namespace LunaCero
             if(repair!=null)repair.enabled=false;
             Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
             // Video de final opcional (StreamingAssets/Videos/final.mp4): si existe reemplaza el despegue animado.
-            bool video=false;yield return LunarEndVideo.Play("final",played=>video=played);
+            bool video=false;
+            // El modelo nuevo despega en la escena; el video sigue siendo alternativa para mapas antiguos.
+            if(repair==null||repair.ShipVisual==null)yield return LunarEndVideo.Play("final",played=>video=played);
             float flight=video?0f:9f;
             var art=Resources.Load<LostInSpaceArt>("LostInSpaceArt");var camera=Camera.main;
             var root=new GameObject("Despegue de la Condor").transform;
-            var ship=LostInSpaceStage.Actor(art!=null?art.ship:null,root,transform.position+Vector3.up*2,3.4f,25,"",0);
+            var visual=repair!=null?repair.ShipVisual:null;
+            GameObject ship;
+            if(visual!=null)
+            {
+                visual.SetProgress(1f);
+                ship=visual.gameObject;
+                ship.transform.SetParent(root,true);
+            }
+            else ship=LostInSpaceStage.Actor(art!=null?art.ship:null,root,transform.position+Vector3.up*2,3.4f,25,"",0);
             if(ship!=null)Destroy(ship.GetComponent<LostInSpaceStage>());
-            var exhaust=new GameObject("Propulsores de escape");exhaust.transform.SetParent(ship!=null?ship.transform:root,false);exhaust.transform.localPosition=new Vector3(0,-0.5f,0);
+            var exhaust=new GameObject("Propulsores de escape");exhaust.transform.SetParent(ship!=null?ship.transform:root,false);exhaust.transform.localPosition=new Vector3(0,0.2f,0);
             var particles=exhaust.AddComponent<ParticleSystem>();var main=particles.main;main.startColor=new Color(0.2f,0.85f,1);main.startLifetime=0.8f;main.startSize=0.28f;main.startSpeed=5;var shape=particles.shape;shape.shapeType=ParticleSystemShapeType.Cone;exhaust.transform.localRotation=Quaternion.Euler(90,0,0);
-            particles.GetComponent<ParticleSystemRenderer>().sharedMaterial=LunarRuntimeMaterials.Get(new Color(0.2f,0.85f,1,0.5f));
+            particles.GetComponent<ParticleSystemRenderer>().sharedMaterial=LunarHud.Particle(new Color(0.2f,0.85f,1,0.5f));
+            ParticleSystem secondEngine=null;
+            if(visual!=null)
+            {
+                Bounds bounds=LunarLoot.LocalBounds(ship.transform);
+                exhaust.transform.localPosition=new Vector3(-bounds.size.x*0.18f,bounds.center.y,bounds.min.z+0.15f);
+                exhaust.transform.localRotation=Quaternion.Euler(0,180,0);
+                main.startSize=0.4f;main.startLifetime=0.5f;main.startSpeed=9f;
+                shape.angle=12f;shape.radius=0.22f;
+                var other=Instantiate(exhaust,ship.transform,false);
+                other.name="Motor derecho";
+                other.transform.localPosition=new Vector3(bounds.size.x*0.18f,bounds.center.y,bounds.min.z+0.15f);
+                secondEngine=other.GetComponent<ParticleSystem>();
+            }
             var canvasGo=new GameObject("Final de mision",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));var canvas=canvasGo.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=100;
             var scaler=canvasGo.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);
             var font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var title=Text(canvas.transform,font,"CONDOR / SECUENCIA DE DESPEGUE",new Vector2(0,380),30,new Color(0.5f,0.95f,1));
             var text=Text(canvas.transform,font,"Nucleo en linea. Navegacion restaurada. Tripulacion a bordo.",new Vector2(0,-400),22,Color.white);
-            Vector3 basePosition=transform.position;float began=Time.realtimeSinceStartup;
+            Vector3 basePosition=transform.position;
+            Vector3 resting=ship!=null?ship.transform.position:basePosition+Vector3.up*2;
+            Quaternion restingRotation=ship!=null?ship.transform.rotation:Quaternion.identity;
+            float began=Time.realtimeSinceStartup;
             if(video&&ship!=null)ship.SetActive(false);
             while(Time.realtimeSinceStartup-began<flight)
             {
                 float t=(Time.realtimeSinceStartup-began)/9;
-                Vector3 target=basePosition+Vector3.up*(2+Mathf.Max(0,t-0.25f)*Mathf.Max(0,t-0.25f)*85);
-                if(ship!=null)ship.transform.position=target;
+                float ascent=Mathf.Max(0,t-0.25f);
+                Vector3 target=resting+Vector3.up*(ascent*ascent*85);
+                if(ship!=null)
+                {
+                    ship.transform.position=target;
+                    ship.transform.rotation=restingRotation*Quaternion.Euler(-Mathf.SmoothStep(0,12,ascent),0,0);
+                }
+                var emission=particles.emission;emission.rateOverTime=Mathf.Lerp(12,100,Mathf.Clamp01(t*3));
+                if(secondEngine!=null){var otherEmission=secondEngine.emission;otherEmission.rateOverTime=emission.rateOverTime;}
                 if(camera!=null){camera.transform.position=basePosition+new Vector3(-12+t*3,6+t*15,-16);camera.transform.LookAt(target+Vector3.up);}
                 title.text=t<0.3f?"CONDOR / INICIANDO PROPULSORES":"CONDOR / ABANDONANDO LA SUPERFICIE";
                 yield return null;
