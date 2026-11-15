@@ -76,6 +76,7 @@ namespace LunaCero
             viewModel = GetComponent<LunarViewModel>();
             if (viewModel == null) viewModel = gameObject.AddComponent<LunarViewModel>();
             if (GetComponent<LunarPerformance>() == null) gameObject.AddComponent<LunarPerformance>();
+            if (GetComponent<LunarDamageFeedback>() == null) gameObject.AddComponent<LunarDamageFeedback>(); // sonido y direccion del dano
             role = GetComponent<LunarPlayerRole>();
             if (role == null) role = gameObject.AddComponent<LunarPlayerRole>();
             role.Changed += ApplyRole;
@@ -170,7 +171,14 @@ namespace LunaCero
                 Tell($"{data.displayName}: +{data.magazineSize * 2} balas");
                 return;
             }
-            weapons.Add(new LunarWeaponSlot(data, data.startReserve));
+            var added = new LunarWeaponSlot(data, data.startReserve);
+            string ammoKey = data.id == "riel" ? "rifle" : data.id;
+            if (!data.IsMelee && pendingAmmo.TryGetValue(ammoKey, out int stored))
+            {
+                added.Reserve += Mathf.Max(1, Mathf.RoundToInt(stored * data.ammoPickupScale));
+                pendingAmmo.Remove(ammoKey);
+            }
+            weapons.Add(added);
             Equip(weapons.Count - 1, true);
             Tell($"Nueva arma: {data.displayName}  [tecla {weapons.Count}]");
         }
@@ -197,7 +205,7 @@ namespace LunaCero
             currentIndex = index;
             if (announce) nextShot = Mathf.Max(nextShot, Time.time + 0.3f);
             ApplyWeaponVisual(CurrentWeapon.Data);
-            if (announce) Tell(CurrentWeapon.Data.displayName);
+            if (announce) { Tell(CurrentWeapon.Data.displayName); LunarAudio.Play("Armas/" + LunarAudio.Weapon(CurrentWeapon.Data.id) + "/Equipar", transform.position, 0.5f, false); }
             return true;
         }
 
@@ -219,6 +227,9 @@ namespace LunaCero
                 weaponModel.transform.localRotation = weaponVisual.localRotation;
                 foreach (var collider in weaponModel.GetComponentsInChildren<Collider>()) collider.enabled = false;
             }
+            // Tercera persona: el arma va en la mano derecha del astronauta (antes flotaba al lado).
+            if (!TryGetComponent(out LunarHandHold handHold)) handHold = gameObject.AddComponent<LunarHandHold>();
+            handHold.Attach(weaponVisual, weaponModel, data.IsMelee, aimCamera != null ? aimCamera.transform : null);
         }
 
         private void HandleWeaponInput()
@@ -284,6 +295,7 @@ namespace LunaCero
             var data = weapon.Data;
             nextShot = Time.time + data.fireInterval;
             weapon.Ammo--;
+            LunarAudio.Play("Armas/" + LunarAudio.Weapon(data.id) + "/Disparo_0" + Random.Range(1,4), transform.position, 0.65f, false);
             GetComponent<LunarPlayerAnimation>()?.Shot();
             if (viewModel != null) viewModel.Kick();
             FindObjectOfType<LunarHordeDirector>()?.NotifyShot(transform.position);
@@ -494,18 +506,46 @@ namespace LunaCero
         private IEnumerator Reload(LunarWeaponSlot weapon)
         {
             Reloading = true;
-            yield return new WaitForSeconds(weapon.Data.reloadDuration * RoleDef.reloadTime);
+            string audioPath = "Armas/" + LunarAudio.Weapon(weapon.Data.id) + "/";
+            float duration = weapon.Data.reloadDuration * RoleDef.reloadTime;
+            LunarAudio.Play(audioPath + "Recarga_Extraer_Celda", transform.position, 0.5f, false);
+            yield return new WaitForSeconds(duration * 0.45f);
+            LunarAudio.Play(audioPath + "Recarga_Insertar_Celda", transform.position, 0.5f, false);
+            yield return new WaitForSeconds(duration * 0.35f);
+            LunarAudio.Play(audioPath + "Recarga_Activar_Energia", transform.position, 0.5f, false);
+            yield return new WaitForSeconds(duration * 0.2f);
             if (CanAct)
             {
                 int amount = Mathf.Min(weapon.Data.magazineSize - weapon.Ammo, weapon.Reserve);
                 weapon.Ammo += amount;
                 weapon.Reserve -= amount;
+                LunarAudio.Play(audioPath + "Recarga_Completa", transform.position, 0.5f, false);
             }
             Reloading = false;
             reloadRoutine = null;
         }
 
         /// <summary>Las cajas azules recargan la reserva del arma equipada, escalada segun el arma.</summary>
+        public bool AddAmmoForWeapon(string id, int amount)
+        {
+            if(string.IsNullOrEmpty(id)) { AddAmmo(amount); return true; }
+            var slot=weapons.FirstOrDefault(w=>w.Data.id==id);
+            if(id=="rifle" && CurrentWeapon?.Data.id=="riel") slot=CurrentWeapon;
+            if(slot==null && id=="rifle") slot=weapons.FirstOrDefault(w=>w.Data.id=="riel");
+            if(slot==null)
+            {
+                // Sin esa arma todavia: se guarda en la mochila y se suma cuando la recojas.
+                pendingAmmo.TryGetValue(id, out int stored);
+                pendingAmmo[id] = stored + Mathf.Max(1, amount);
+                var data = FindWeapon(id);
+                Tell($"Municion guardada para {(data != null ? data.displayName : id)} ({pendingAmmo[id]})");
+                return true;
+            }
+            slot.Reserve+=Mathf.Max(1,Mathf.RoundToInt(amount*slot.Data.ammoPickupScale));
+            Tell("Municion para "+slot.Data.displayName); return true;
+        }
+        /// <summary>Municion recogida de armas que aun no se tienen (por id de arma).</summary>
+        private readonly Dictionary<string, int> pendingAmmo = new Dictionary<string, int>();
         public void AddAmmo(int amount)
         {
             var weapon = CurrentWeapon;
@@ -603,14 +643,16 @@ namespace LunaCero
             Cursor.visible = true;
         }
 
+        /// <summary>Borde inferior (en coordenadas del HUD) del panel de soporte vital; los paneles de la derecha se colocan debajo.</summary>
+        public static float VitalsPanelBottom = 190f;
+        private LunarRepairPoint repairCache;
+        private float repairLookup;
+
         private void OnGUI()
         {
-            if (LunarPlayerRole.MenuOpen) return; // la pantalla de roles ocupa todo
-            float scale = Mathf.Max(0.5f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
-            Matrix4x4 original = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
-            float width = Screen.width / scale;
-            float height = Screen.height / scale;
+            if (LunarPlayerRole.MenuOpen || LostInSpaceFinale.Active) return; // la pantalla de roles o el final ocupan todo
+            var size = LunarHud.Begin(out Matrix4x4 original);
+            float width = size.x, height = size.y;
             EnsureStyles();
             bool blink = Mathf.Repeat(Time.time, 0.6f) < 0.3f;
 
@@ -618,26 +660,23 @@ namespace LunaCero
             if (Time.time - health.LastDamageTime < 0.2f) Fill(new Rect(0, 0, width, height), new Color(1, 0, 0, 0.2f));
             if (vitals != null && vitals.Suffocating && !health.IsDead) Fill(new Rect(0, 0, width, height), new Color(0.05f, 0.1f, 0.3f, blink ? 0.28f : 0.18f));
 
-            // Titulo y ayuda (H): a la derecha del radar, que ocupa la esquina superior izquierda.
+            // Linterna bajo el radar y ayuda (H) a su derecha.
             float hx = 18;
             if (TryGetComponent(out LunarRadar radar) && radar.enabled)
             {
                 hx = radar.Area.xMax + 14;
                 if (status != null)
                 {
-                    labelStyle.normal.textColor = status.FlashlightOn ? new Color(1f, 0.92f, 0.5f) : new Color(0.6f, 0.6f, 0.65f);
-                    GUI.Label(new Rect(radar.Area.x + 2, radar.Area.yMax + 4, 260, 22), status.FlashlightOn ? "LINTERNA: ENCENDIDA (T)" : "LINTERNA: APAGADA (T)", labelStyle);
-                    labelStyle.normal.textColor = new Color(0.85f, 0.92f, 1f);
+                    Color lamp = status.FlashlightOn ? new Color(1f, 0.85f, 0.3f) : new Color(0.55f, 0.58f, 0.65f);
+                    LunarHud.Icon(new Rect(radar.Area.x + 2, radar.Area.yMax + 6, 34, 22), LunarHud.Flashlight, lamp);
+                    LunarHud.Label.normal.textColor = lamp;
+                    GUI.Label(new Rect(radar.Area.x + 42, radar.Area.yMax + 6, 220, 22), status.FlashlightOn ? "Linterna [T]" : "Linterna apagada [T]", LunarHud.Label);
+                    LunarHud.Label.normal.textColor = LunarHud.Text;
                 }
             }
             var roleDef = RoleDef;
-            GUI.Label(new Rect(hx, 12, 600, 24), stationHealingOnly ? "LUNA CERO  |  Expedicion y hordas" : "LUNA CERO  |  Arena de combate", labelStyle);
-            if (role != null && role.HasRole)
-            {
-                labelStyle.normal.textColor = roleDef.color;
-                GUI.Label(new Rect(hx + 330, 12, 300, 24), "ROL: " + roleDef.title.ToUpperInvariant(), labelStyle);
-                labelStyle.normal.textColor = new Color(0.85f, 0.92f, 1f);
-            }
+            DrawVitals(width, blink);
+            DrawMission(height, roleDef);
             if (showHelp)
             {
                 Fill(new Rect(hx - 4, 38, 480, 112 + (status != null ? 20 : 0) + (LunarShip.All.Count > 0 ? 20 : 0)), new Color(0, 0, 0, 0.45f));
@@ -651,72 +690,21 @@ namespace LunaCero
             }
             else GUI.Label(new Rect(hx, 36, 300, 20), "H: controles", smallStyle);
 
-            // Barras de soporte vital (abajo a la izquierda)
-            float panelHeight = vitals != null ? 152 : 50;
-            float px = 18, py = height - panelHeight - 18;
-            Fill(new Rect(px - 6, py - 8, 340, panelHeight + 12), new Color(0, 0, 0, 0.5f));
-            float hp = health.Current / health.Maximum;
-            Bar(new Rect(px, py, 324, 30), "VIDA", $"{health.Current:0}/{health.Maximum:0}", hp,
-                hp < 0.25f && blink ? new Color(1f, 0.35f, 0.35f) : Color.Lerp(new Color(0.85f, 0.12f, 0.12f), new Color(0.25f, 0.85f, 0.3f), hp));
-            if (vitals != null)
-            {
-                float o2 = vitals.Oxygen / vitals.MaxOxygen;
-                string o2Text = vitals.Refilling ? "RECARGANDO" : $"{o2 * 100f:0}%";
-                Bar(new Rect(px, py + 40, 324, 30), "OXIGENO", o2Text, o2,
-                    o2 < 0.2f && blink ? new Color(1f, 0.55f, 0.2f) : new Color(0.2f, 0.75f, 1f));
-                float st = vitals.Stamina / vitals.MaxStamina;
-                Bar(new Rect(px, py + 80, 324, 30), "ENERGIA", vitals.Exhausted ? "AGOTADO" : $"{st * 100f:0}%", st,
-                    vitals.Exhausted ? new Color(0.5f, 0.5f, 0.5f) : new Color(1f, 0.82f, 0.2f));
-                float fuel = vitals.Fuel / vitals.MaxFuel;
-                string fuelText = vitals.FuelCoolingDown ? $"ESPERA {Mathf.CeilToInt(vitals.FuelCooldownRemaining)} s"
-                    : fuel < 1f && movement.IsGrounded ? $"RECARGANDO {fuel * 100f:0}%" : $"{fuel * 100f:0}%";
-                Bar(new Rect(px, py + 120, 324, 30), "PROPULSOR", fuelText, fuel,
-                    vitals.FuelCoolingDown ? new Color(0.5f, 0.5f, 0.5f) : new Color(0.7f, 0.45f, 1f));
-            }
+            DrawWeapons(width, height, blink);
 
-            // Municion y botiquines (abajo a la derecha)
-            float ax = width - 250, ay = height - 118;
-            Fill(new Rect(ax, ay, 232, 100), new Color(0, 0, 0, 0.5f));
-            var current = CurrentWeapon;
-            labelStyle.normal.textColor = current != null ? Color.Lerp(current.Data.color, Color.white, 0.45f) : Color.white;
-            GUI.Label(new Rect(ax + 12, ay + 4, 210, 22), current != null ? current.Data.displayName.ToUpperInvariant() : "-", labelStyle);
-            labelStyle.normal.textColor = new Color(0.85f, 0.92f, 1f);
-            bool melee = current != null && current.Data.IsMelee;
-            if (melee)
-            {
-                bigStyle.normal.textColor = Color.white;
-                GUI.Label(new Rect(ax + 12, ay + 24, 210, 44), "GOLPE", bigStyle);
-                GUI.Label(new Rect(ax + 92, ay + 38, 130, 24), current.Data.durability > 0 ? $"uso {current.Ammo}/{current.Data.durability}" : "irrompible", valueStyle);
-            }
-            else
-            {
-                bigStyle.normal.textColor = Ammo == 0 && blink ? new Color(1f, 0.35f, 0.3f) : Color.white;
-                GUI.Label(new Rect(ax + 12, ay + 24, 120, 44), Ammo.ToString(), bigStyle);
-                GUI.Label(new Rect(ax + 92, ay + 38, 130, 24), $"/ {ReserveAmmo}", valueStyle);
-            }
-            GUI.Label(new Rect(ax + 12, ay + 72, 220, 22), Reloading ? "RECARGANDO..." : stationHealingOnly && Medkits == 0 ? "Curacion: estaciones" : $"Botiquines: {Medkits} (F)", smallStyle);
-
-            // Ranuras de armas (1-9 / rueda del raton)
-            for (int i = 0; i < weapons.Count; i++)
-            {
-                var slot = weapons[i];
-                // Hasta 5 por fila; las demas suben una fila.
-                var r = new Rect(width - 250 + (i % 5) * 47, ay - 34 - (i / 5) * 32, 44, 28);
-                Fill(r, i == currentIndex ? new Color(slot.Data.color.r, slot.Data.color.g, slot.Data.color.b, 0.85f) : new Color(0, 0, 0, 0.45f));
-                Fill(new Rect(r.x, r.yMax - 3, r.width, 3), slot.Data.color);
-                GUI.Label(new Rect(r.x + 4, r.y + 1, 40, 14), (i + 1).ToString(), smallStyle);
-                GUI.Label(new Rect(r.x, r.y + 12, r.width - 4, 14), slot.Data.IsMelee ? (slot.Data.durability > 0 ? "x" + slot.Ammo : "golpe") : slot.Ammo + "/" + slot.Reserve, valueStyle);
-            }
-
-            // Mira
+            // Mira: cuatro trazos con hueco central (roja al acertar)
             if (Aiming)
             {
                 // Mira telescopica simple
                 Fill(new Rect(0, height / 2 - 0.5f, width, 1), new Color(0, 0, 0, 0.8f));
                 Fill(new Rect(width / 2 - 0.5f, 0, 1, height), new Color(0, 0, 0, 0.8f));
             }
-            centerStyle.normal.textColor = Time.time < hitUntil ? new Color(1f, 0.3f, 0.3f) : Color.white;
-            GUI.Label(new Rect(width / 2 - 15, height / 2 - 15, 30, 30), Time.time < hitUntil ? "X" : "+", centerStyle);
+            Color cross = Time.time < hitUntil ? new Color(1f, 0.3f, 0.3f) : new Color(1f, 1f, 1f, 0.92f);
+            float cx = width / 2, cy = height / 2, gap = Time.time < hitUntil ? 7f : 5f;
+            Fill(new Rect(cx - 1, cy - gap - 9, 2, 9), cross);
+            Fill(new Rect(cx - 1, cy + gap, 2, 9), cross);
+            Fill(new Rect(cx - gap - 9, cy - 1, 9, 2), cross);
+            Fill(new Rect(cx + gap, cy - 1, 9, 2), cross);
 
             // Avisos
             centerStyle.normal.textColor = new Color(1f, 0.6f, 0.25f);
@@ -728,14 +716,178 @@ namespace LunaCero
             centerStyle.normal.textColor = Color.white;
             if (LunarSession.InMultiplayer && role != null && role.ProtectionSeconds > 0f)
                 GUI.Label(new Rect(width / 2 - 250, height / 2 + 70, 500, 25), $"PROTECCION DE ENTRADA: {Mathf.CeilToInt(role.ProtectionSeconds)} s", centerStyle);
-            if (Healing) GUI.Box(new Rect(width / 2 - 170, height / 2 + 50, 340, 55), $"SANANDO... {roleDef.stationHealTime:0.#} segundos\nNo salgas del anillo ni recibas dano.");
-            string prompt = held != null ? "E: soltar | G: lanzar | Arma: soltar " + held.displayName : nearby != null ? $"E: {nearby.verb} {nearby.displayName}" : "";
-            if (prompt.Length > 0) GUI.Label(new Rect(width / 2 - 250, height - 90, 500, 25), prompt, centerStyle);
-            if (Time.time < messageUntil) GUI.Label(new Rect(width / 2 - 250, height - 60, 500, 25), message, centerStyle);
-            if (health.IsDead) GUI.Box(new Rect(width / 2 - 180, height / 2 - 50, 360, 100), LunarSession.InMultiplayer
-                ? "HAS MUERTO\n\nEnter: reaparecer en la base\n(tus companeros siguen jugando)"
-                : "HAS MUERTO\n\nEnter: reiniciar con el mismo rol\nC: elegir otro rol");
+            if (Healing) LunarHud.Prompt(width / 2, height / 2 + 50, "F", $"SANANDO... {roleDef.stationHealTime:0.#} segundos", "No salgas del anillo ni recibas dano.");
+            // Aviso de interaccion: aparece al acercarte a algo que se puede usar o recoger.
+            if (!health.IsDead && !Healing)
+            {
+                if (held != null)
+                {
+                    var repair = Repair;
+                    bool part = held.GetComponent<LunarShipPart>() != null;
+                    string sub = part && repair != null
+                        ? $"Llevala al anillo verde de la nave [{Vector3.Distance(transform.position, repair.transform.position):0} m]  |  G: lanzar"
+                        : "G: lanzar  |  1-9: soltar y cambiar de arma";
+                    LunarHud.Prompt(width / 2, height / 2 + 70, "E", "Soltar " + held.displayName, sub);
+                }
+                else if (nearby != null)
+                    LunarHud.Prompt(width / 2, height / 2 + 70, "E", Capital(nearby.verb) + " " + nearby.displayName, Describe(nearby), nearby.GetComponent<LunarShipPart>() != null);
+            }
+            if (Time.time < messageUntil) GUI.Label(new Rect(width / 2 - 300, height / 2 + 136, 600, 25), message, centerStyle);
+            if (health.IsDead) LunarHud.Prompt(width / 2, height / 2 - 40, "", "HAS MUERTO", LunarSession.InMultiplayer
+                ? "Enter: reaparecer en la base (tus companeros siguen jugando)"
+                : "Enter: reiniciar con el mismo rol  |  C: elegir otro rol", true);
             GUI.matrix = original;
+        }
+
+        private LunarRepairPoint Repair
+        {
+            get
+            {
+                if (repairCache == null && Time.unscaledTime >= repairLookup) { repairCache = FindObjectOfType<LunarRepairPoint>(); repairLookup = Time.unscaledTime + 2f; }
+                return repairCache;
+            }
+        }
+
+        private static string Capital(string value) => string.IsNullOrEmpty(value) ? "" : char.ToUpperInvariant(value[0]) + value.Substring(1);
+
+        private string Describe(LunarPickup pickup)
+        {
+            if (pickup.GetComponent<LunarShipPart>() != null) return "Pieza de la nave: llevala a la zona de reparacion";
+            switch (pickup.kind)
+            {
+                case LunarPickupKind.Weapon:
+                    var data = FindWeapon(pickup.weaponId);
+                    return data != null && data.IsMelee ? "Objeto contundente: golpea y aturde" : "Arma de fuego";
+                case LunarPickupKind.Ammo: return "Municion para tus armas";
+                case LunarPickupKind.Medkit: return "Botiquin: F para curarte";
+                case LunarPickupKind.AmmoLocker: return Time.time >= pickup.ReadyAt ? "Rellena la reserva de todas tus armas" : $"Disponible en {Mathf.CeilToInt(pickup.ReadyAt - Time.time)} s";
+                case LunarPickupKind.Ice: return "Hielo: se convierte en oxigeno";
+                default: return "Se puede cargar y lanzar";
+            }
+        }
+
+        /// <summary>Panel de soporte vital (arriba a la derecha): corazones, burbujas de oxigeno, energia y propulsor.</summary>
+        private void DrawVitals(float width, bool blink)
+        {
+            float rows = vitals != null ? 4 : 1;
+            var box = new Rect(width - 284, 12, 270, 12 + rows * 32);
+            VitalsPanelBottom = box.yMax;
+            LunarHud.Panel(box);
+            float x = box.x + 12, y = box.y + 8, valueX = box.xMax - 76;
+
+            // Vida: 5 corazones (cada uno una quinta parte), el ultimo se llena por partes.
+            float hp = health.Current / health.Maximum;
+            const int hearts = 5;
+            for (int i = 0; i < hearts; i++)
+            {
+                var r = new Rect(x + i * 30, y + 2, 26, 22);
+                LunarHud.Icon(r, LunarHud.Heart, new Color(0.25f, 0.27f, 0.32f, 0.9f));
+                float part = Mathf.Clamp01(hp * hearts - i);
+                if (part <= 0f) continue;
+                Color red = hp < 0.25f && blink ? new Color(1f, 0.55f, 0.55f) : new Color(0.95f, 0.16f, 0.22f);
+                Color previous = GUI.color;
+                GUI.color = red;
+                GUI.DrawTextureWithTexCoords(new Rect(r.x, r.y, r.width * part, r.height), LunarHud.Heart, new Rect(0, 0, part, 1));
+                GUI.color = previous;
+            }
+            GUI.Label(new Rect(valueX - 20, y + 1, 84, 24), $"{health.Current:0} HP", LunarHud.Value);
+            if (vitals == null) return;
+
+            // Oxigeno: 8 burbujas
+            y += 32;
+            float o2 = vitals.Oxygen / vitals.MaxOxygen;
+            GUI.Label(new Rect(x, y, 30, 26), "O", LunarHud.Label);
+            GUI.Label(new Rect(x + 12, y + 8, 14, 18), "2", LunarHud.Small);
+            Color blue = o2 < 0.2f && blink ? new Color(1f, 0.55f, 0.2f) : new Color(0.25f, 0.75f, 1f);
+            for (int i = 0; i < 8; i++)
+            {
+                var r = new Rect(x + 30 + i * 19, y + 5, 16, 16);
+                float part = Mathf.Clamp01(o2 * 8 - i);
+                LunarHud.Icon(r, LunarHud.Ring, new Color(0.45f, 0.5f, 0.58f, 0.8f));
+                if (part > 0f) LunarHud.Icon(r, LunarHud.Bubble, new Color(blue.r, blue.g, blue.b, 0.25f + 0.75f * part));
+            }
+            GUI.Label(new Rect(valueX, y + 1, 64, 24), vitals.Refilling ? "+O2" : $"{o2 * 100f:0}%", LunarHud.Value);
+
+            // Energia (correr)
+            y += 32;
+            float st = vitals.Stamina / vitals.MaxStamina;
+            Color yellow = vitals.Exhausted ? new Color(0.5f, 0.5f, 0.5f) : new Color(1f, 0.85f, 0.15f);
+            LunarHud.Icon(new Rect(x + 2, y + 2, 16, 22), LunarHud.Bolt, yellow);
+            LunarHud.Segments(new Rect(x + 30, y + 7, 150, 13), st, 8, yellow, new Color(1f, 1f, 1f, 0.12f));
+            GUI.Label(new Rect(valueX, y + 1, 64, 24), vitals.Exhausted ? "--" : $"{st * 100f:0}%", LunarHud.Value);
+
+            // Propulsor (combustible propio)
+            y += 32;
+            float fuel = vitals.Fuel / vitals.MaxFuel;
+            Color cyan = vitals.FuelCoolingDown ? new Color(0.5f, 0.5f, 0.5f) : new Color(0.3f, 0.82f, 1f);
+            LunarHud.Icon(new Rect(x, y + 1, 20, 24), LunarHud.Jetpack, cyan);
+            LunarHud.Segments(new Rect(x + 30, y + 7, 150, 13), fuel, 8, cyan, new Color(1f, 1f, 1f, 0.12f));
+            GUI.Label(new Rect(valueX, y + 1, 64, 24), vitals.FuelCoolingDown ? $"{Mathf.CeilToInt(vitals.FuelCooldownRemaining)} s" : $"{fuel * 100f:0}%", LunarHud.Value);
+        }
+
+        /// <summary>Abajo a la izquierda: rol y objetivo actual (dos lineas).</summary>
+        private void DrawMission(float height, LunarRoleDefinition roleDef)
+        {
+            var box = new Rect(18, height - 66, 420, 50);
+            LunarHud.Fill(box, new Color(0.01f, 0.03f, 0.06f, 0.45f));
+            LunarHud.Fill(new Rect(box.x, box.y, 3, box.height), role != null && role.HasRole ? roleDef.color : LunarHud.Cyan);
+            if (role != null && role.HasRole)
+            {
+                LunarHud.Label.normal.textColor = roleDef.color;
+                GUI.Label(new Rect(box.x + 12, box.y + 4, 380, 22), roleDef.title, LunarHud.Label);
+                LunarHud.Label.normal.textColor = LunarHud.Text;
+            }
+            GUI.Label(new Rect(box.x + 12, box.y + 26, 400, 20), Objective(), LunarHud.Small);
+        }
+
+        private string Objective()
+        {
+            var repair = Repair;
+            if (held != null && held.GetComponent<LunarShipPart>() != null) return "Lleva la pieza al anillo verde de reparacion de la nave.";
+            if (vitals != null && vitals.Oxygen / vitals.MaxOxygen < 0.3f) return "Oxigeno bajo: ve a una estacion medica o a la base.";
+            if (health.Current / health.Maximum < 0.35f) return "Vida baja: busca una estacion medica (F para sanar).";
+            if (repair != null && repair.Repaired) return "Nave reparada! Preparando el despegue.";
+            if (repair != null) return $"Busca las piezas de la nave ({repair.Installed}/{repair.requiredParts}) y llevalas a la nave.";
+            if (ReserveAmmo == 0 && CurrentWeapon != null && !CurrentWeapon.Data.IsMelee) return "Busca balas azules y llega a la estacion medica.";
+            return "Sobrevive a las hordas.";
+        }
+
+        /// <summary>Abajo a la derecha: arma actual con su silueta y municion, y las ranuras 1-9 encima.</summary>
+        private void DrawWeapons(float width, float height, bool blink)
+        {
+            var box = new Rect(width - 284, height - 96, 270, 80);
+            LunarHud.Panel(box);
+            var current = CurrentWeapon;
+            if (current != null)
+            {
+                LunarHud.Icon(new Rect(box.x + 12, box.y + 6, 84, 30), LunarHud.WeaponIcon(current.Data), Color.Lerp(current.Data.color, Color.white, 0.55f));
+                GUI.Label(new Rect(box.x + 104, box.y + 8, 170, 24), current.Data.displayName, LunarHud.Title);
+                if (current.Data.IsMelee)
+                {
+                    GUI.Label(new Rect(box.x + 96, box.y + 30, box.width - 104, 44), current.Data.durability > 0 ? $"{current.Ammo} / {current.Data.durability}" : "GOLPE", LunarHud.Big);
+                }
+                else
+                {
+                    LunarHud.Big.normal.textColor = Ammo == 0 && blink ? new Color(1f, 0.35f, 0.3f) : Color.white;
+                    GUI.Label(new Rect(box.x + 96, box.y + 30, box.width - 104, 44), $"{Ammo}  /  {ReserveAmmo}", LunarHud.Big);
+                    LunarHud.Big.normal.textColor = Color.white;
+                }
+            }
+            // Solo lo que cambia la decision del momento: recargando o botiquines disponibles.
+            string footer = Reloading ? "RECARGANDO..." : Medkits > 0 ? $"+{Medkits} (F)" : "";
+            if (footer.Length > 0) GUI.Label(new Rect(box.x + 14, box.yMax - 24, 120, 20), footer, LunarHud.Small);
+
+            // Ranuras (hasta 5 por fila; las demas suben una fila)
+            for (int i = 0; i < weapons.Count; i++)
+            {
+                var slot = weapons[i];
+                int column = i % 5, row = i / 5;
+                var r = new Rect(box.xMax - 5 * 56 + column * 56 + 4, box.y - 46 - row * 46, 52, 40);
+                LunarHud.Panel(r, i == currentIndex);
+                GUI.Label(new Rect(r.x + 7, r.y + 2, 20, 18), (i + 1).ToString(), LunarHud.Label);
+                string ammo = slot.Data.IsMelee ? (slot.Data.durability > 0 ? "x" + slot.Ammo : "golpe") : slot.Ammo + "/" + slot.Reserve;
+                GUI.Label(new Rect(r.x + 2, r.y + 19, r.width - 8, 18), ammo, LunarHud.Value);
+            }
         }
 
         private void Bar(Rect area, string label, string value, float fraction, Color color)
@@ -769,6 +921,7 @@ namespace LunaCero
         }
     }
 }
+
 
 
 

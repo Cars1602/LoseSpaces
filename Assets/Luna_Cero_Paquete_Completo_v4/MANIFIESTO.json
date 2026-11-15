@@ -1,0 +1,850 @@
+[
+  {
+    "archivo": "Monstruos/Acechador/Acechador_ataque_enojo.wav",
+    "categoria": "Monstruo",
+    "accion": "Acechador_ataque_enojo",
+    "duracion_s": 2.3,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Acechador/Acechador_base_ambiente.wav",
+    "categoria": "Monstruo",
+    "accion": "Acechador_base_ambiente",
+    "duracion_s": 4.5,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Acechador/Acechador_muerte.wav",
+    "categoria": "Monstruo",
+    "accion": "Acechador_muerte",
+    "duracion_s": 3.2,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Enjambre/Enjambre_ataque_enojo.wav",
+    "categoria": "Monstruo",
+    "accion": "Enjambre_ataque_enojo",
+    "duracion_s": 2.15,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Enjambre/Enjambre_base_ambiente.wav",
+    "categoria": "Monstruo",
+    "accion": "Enjambre_base_ambiente",
+    "duracion_s": 3.5,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Enjambre/Enjambre_muerte.wav",
+    "categoria": "Monstruo",
+    "accion": "Enjambre_muerte",
+    "duracion_s": 2.7,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Escupidor/Escupidor_ataque_enojo.wav",
+    "categoria": "Monstruo",
+    "accion": "Escupidor_ataque_enojo",
+    "duracion_s": 2.95,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Escupidor/Escupidor_base_ambiente.wav",
+    "categoria": "Monstruo",
+    "accion": "Escupidor_base_ambiente",
+    "duracion_s": 4.1,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Escupidor/Escupidor_muerte.wav",
+    "categoria": "Monstruo",
+    "accion": "Escupidor_muerte",
+    "duracion_s": 4.0,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Gigante/Gigante_ataque_enojo.wav",
+    "categoria": "Monstruo",
+    "accion": "Gigante_ataque_enojo",
+    "duracion_s": 5.4,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Gigante/Gigante_base_ambiente.wav",
+    "categoria": "Monstruo",
+    "accion": "Gigante_base_ambiente",
+    "duracion_s": 5.0,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Monstruos/Gigante/Gigante_muerte.wav",
+    "categoria": "Monstruo",
+    "accion": "Gigante_muerte",
+    "duracion_s": 5.9,
+    "bucle": false,
+    "notas": "Master de monstruo v3 conservado sin cambios."
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Disparo_01.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.45,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Disparo_02.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.45,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Disparo_03.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.45,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Disparo_Cargado.wav",
+    "categoria": "Arma",
+    "accion": "disparo_cargado",
+    "duracion_s": 0.7,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Carga_Inicio.wav",
+    "categoria": "Arma",
+    "accion": "carga_start",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Carga_Sostenida_LOOP.wav",
+    "categoria": "Arma",
+    "accion": "carga_loop",
+    "duracion_s": 2.0,
+    "bucle": true,
+    "notas": "Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio."
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Carga_Lista.wav",
+    "categoria": "Arma",
+    "accion": "carga_ready",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Carga_Cancelar.wav",
+    "categoria": "Arma",
+    "accion": "carga_cancel",
+    "duracion_s": 0.48,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Recarga_Extraer_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_extraer_celda",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Recarga_Insertar_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_insertar_celda",
+    "duracion_s": 0.55,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Recarga_Activar_Energia.wav",
+    "categoria": "Arma",
+    "accion": "recarga_activar_energia",
+    "duracion_s": 0.62,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Recarga_Completa.wav",
+    "categoria": "Arma",
+    "accion": "recarga_completa",
+    "duracion_s": 1.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Equipar.wav",
+    "categoria": "Arma",
+    "accion": "equipar",
+    "duracion_s": 0.65,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Guardar.wav",
+    "categoria": "Arma",
+    "accion": "guardar",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Sin_Energia.wav",
+    "categoria": "Arma",
+    "accion": "sin_energia",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Sobrecalentamiento.wav",
+    "categoria": "Arma",
+    "accion": "sobrecalentamiento",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Enfriamiento.wav",
+    "categoria": "Arma",
+    "accion": "enfriamiento",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Impacto_Energia.wav",
+    "categoria": "Arma",
+    "accion": "impacto_energia",
+    "duracion_s": 0.48,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Pistola_Lunar/Recoger_Arma.wav",
+    "categoria": "Arma",
+    "accion": "recoger_arma",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Municion_Pistola/Recoger_01.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Municion_Pistola/Recoger_02.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Municion_Pistola/Recoger_03.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Disparo_01.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Disparo_02.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Disparo_03.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Disparo_Cargado.wav",
+    "categoria": "Arma",
+    "accion": "disparo_cargado",
+    "duracion_s": 1.1,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Carga_Inicio.wav",
+    "categoria": "Arma",
+    "accion": "carga_start",
+    "duracion_s": 1.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Carga_Sostenida_LOOP.wav",
+    "categoria": "Arma",
+    "accion": "carga_loop",
+    "duracion_s": 2.0,
+    "bucle": true,
+    "notas": "Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio."
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Carga_Lista.wav",
+    "categoria": "Arma",
+    "accion": "carga_ready",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Carga_Cancelar.wav",
+    "categoria": "Arma",
+    "accion": "carga_cancel",
+    "duracion_s": 0.48,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Recarga_Extraer_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_extraer_celda",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Recarga_Insertar_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_insertar_celda",
+    "duracion_s": 0.55,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Recarga_Activar_Energia.wav",
+    "categoria": "Arma",
+    "accion": "recarga_activar_energia",
+    "duracion_s": 0.62,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Recarga_Completa.wav",
+    "categoria": "Arma",
+    "accion": "recarga_completa",
+    "duracion_s": 2.1,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Equipar.wav",
+    "categoria": "Arma",
+    "accion": "equipar",
+    "duracion_s": 0.65,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Guardar.wav",
+    "categoria": "Arma",
+    "accion": "guardar",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Sin_Energia.wav",
+    "categoria": "Arma",
+    "accion": "sin_energia",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Sobrecalentamiento.wav",
+    "categoria": "Arma",
+    "accion": "sobrecalentamiento",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Enfriamiento.wav",
+    "categoria": "Arma",
+    "accion": "enfriamiento",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Impacto_Energia.wav",
+    "categoria": "Arma",
+    "accion": "impacto_energia",
+    "duracion_s": 0.48,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Escopeta_de_Pulsos/Recoger_Arma.wav",
+    "categoria": "Arma",
+    "accion": "recoger_arma",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Cartuchos_de_Pulso/Recoger_01.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Cartuchos_de_Pulso/Recoger_02.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Cartuchos_de_Pulso/Recoger_03.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Disparo_01.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.245,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Disparo_02.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.245,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Disparo_03.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 0.245,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Disparo_Cargado.wav",
+    "categoria": "Arma",
+    "accion": "disparo_cargado",
+    "duracion_s": 0.56,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Carga_Inicio.wav",
+    "categoria": "Arma",
+    "accion": "carga_start",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Carga_Sostenida_LOOP.wav",
+    "categoria": "Arma",
+    "accion": "carga_loop",
+    "duracion_s": 2.0,
+    "bucle": true,
+    "notas": "Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio."
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Carga_Lista.wav",
+    "categoria": "Arma",
+    "accion": "carga_ready",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Carga_Cancelar.wav",
+    "categoria": "Arma",
+    "accion": "carga_cancel",
+    "duracion_s": 0.48,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Recarga_Extraer_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_extraer_celda",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Recarga_Insertar_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_insertar_celda",
+    "duracion_s": 0.55,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Recarga_Activar_Energia.wav",
+    "categoria": "Arma",
+    "accion": "recarga_activar_energia",
+    "duracion_s": 0.62,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Recarga_Completa.wav",
+    "categoria": "Arma",
+    "accion": "recarga_completa",
+    "duracion_s": 1.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Equipar.wav",
+    "categoria": "Arma",
+    "accion": "equipar",
+    "duracion_s": 0.65,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Guardar.wav",
+    "categoria": "Arma",
+    "accion": "guardar",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Sin_Energia.wav",
+    "categoria": "Arma",
+    "accion": "sin_energia",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Sobrecalentamiento.wav",
+    "categoria": "Arma",
+    "accion": "sobrecalentamiento",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Enfriamiento.wav",
+    "categoria": "Arma",
+    "accion": "enfriamiento",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Impacto_Energia.wav",
+    "categoria": "Arma",
+    "accion": "impacto_energia",
+    "duracion_s": 0.48,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Recoger_Arma.wav",
+    "categoria": "Arma",
+    "accion": "recoger_arma",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Fusil_Lunar/Rafaga_3_Disparos.wav",
+    "categoria": "Arma",
+    "accion": "rafaga",
+    "duracion_s": 0.55,
+    "bucle": false,
+    "notas": "Alternativa a disparar tres one-shots; no reproducir ambos a la vez."
+  },
+  {
+    "archivo": "Municiones/Celdas_de_Rifle/Recoger_01.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Celdas_de_Rifle/Recoger_02.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Celdas_de_Rifle/Recoger_03.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 0.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Disparo_01.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 1.4,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Disparo_02.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 1.4,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Disparo_03.wav",
+    "categoria": "Arma",
+    "accion": "disparo",
+    "duracion_s": 1.4,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Disparo_Cargado.wav",
+    "categoria": "Arma",
+    "accion": "disparo_cargado",
+    "duracion_s": 1.8,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Carga_Inicio.wav",
+    "categoria": "Arma",
+    "accion": "carga_start",
+    "duracion_s": 2.2,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Carga_Sostenida_LOOP.wav",
+    "categoria": "Arma",
+    "accion": "carga_loop",
+    "duracion_s": 2.0,
+    "bucle": true,
+    "notas": "Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio."
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Carga_Lista.wav",
+    "categoria": "Arma",
+    "accion": "carga_ready",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Carga_Cancelar.wav",
+    "categoria": "Arma",
+    "accion": "carga_cancel",
+    "duracion_s": 0.48,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Recarga_Extraer_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_extraer_celda",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Recarga_Insertar_Celda.wav",
+    "categoria": "Arma",
+    "accion": "recarga_insertar_celda",
+    "duracion_s": 0.55,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Recarga_Activar_Energia.wav",
+    "categoria": "Arma",
+    "accion": "recarga_activar_energia",
+    "duracion_s": 0.62,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Recarga_Completa.wav",
+    "categoria": "Arma",
+    "accion": "recarga_completa",
+    "duracion_s": 2.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Equipar.wav",
+    "categoria": "Arma",
+    "accion": "equipar",
+    "duracion_s": 0.65,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Guardar.wav",
+    "categoria": "Arma",
+    "accion": "guardar",
+    "duracion_s": 0.5,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Sin_Energia.wav",
+    "categoria": "Arma",
+    "accion": "sin_energia",
+    "duracion_s": 0.36,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Sobrecalentamiento.wav",
+    "categoria": "Arma",
+    "accion": "sobrecalentamiento",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Enfriamiento.wav",
+    "categoria": "Arma",
+    "accion": "enfriamiento",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Impacto_Energia.wav",
+    "categoria": "Arma",
+    "accion": "impacto_energia",
+    "duracion_s": 0.78,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Recoger_Arma.wav",
+    "categoria": "Arma",
+    "accion": "recoger_arma",
+    "duracion_s": 0.85,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Mira_Entrar.wav",
+    "categoria": "Arma",
+    "accion": "mira",
+    "duracion_s": 0.35,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Armas/Rifle_de_Precision/Mira_Salir.wav",
+    "categoria": "Arma",
+    "accion": "mira",
+    "duracion_s": 0.35,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Capsula_de_Plasma/Recoger_01.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Capsula_de_Plasma/Recoger_02.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Capsula_de_Plasma/Recoger_03.wav",
+    "categoria": "Municion",
+    "accion": "recoger",
+    "duracion_s": 1.0,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Municiones/Inventario_Lleno.wav",
+    "categoria": "Municion",
+    "accion": "inventario_lleno",
+    "duracion_s": 0.4,
+    "bucle": false,
+    "notas": ""
+  },
+  {
+    "archivo": "Lobby/Lobby_Luna_Cero_Musica_LOOP_96s.wav",
+    "categoria": "Lobby",
+    "accion": "musica_ambiental",
+    "duracion_s": 96,
+    "bucle": true,
+    "notas": "Composicion original; 60 BPM, 24 compases, stereo. Repetir sin espacios ni fundidos automaticos. El archivo comienza en un punto del ciclo musical."
+  },
+  {
+    "archivo": "Lobby/Base_Lunar_Ambiente_LOOP_48s.wav",
+    "categoria": "Lobby",
+    "accion": "ambiente_habitat",
+    "duracion_s": 48,
+    "bucle": true,
+    "notas": "Ambiente interior original de base lunar ficticia, sin musica. Puede usarse solo o a bajo volumen bajo la musica."
+  }
+]

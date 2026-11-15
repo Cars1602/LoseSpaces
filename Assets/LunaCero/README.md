@@ -264,3 +264,35 @@ El Parasito (Rider/Jockey) usa Assets/Jockey/moustro asechador/asechando.fbx y s
 
 Armas 3D: modelos de Assets/Armas conectados a pistola, rifle, escopeta y plasma en manos y recogibles. El rifle de riel reutiliza el rifle a mayor longitud. Prefabs normalizados: Assets/LunaCero/Resources/LunarWeapons. Menu: Luna Cero > Instalar modelos de armas.
 
+
+## Audio, menu y explosiones
+El paquete Luna_Cero_Paquete_Completo_v4 aporta sonidos de disparo, equipamiento, recarga, recogida, voces y musica del menu. Sus creditos y fuentes se conservan en CREDITOS_Y_FUENTES.txt. El banco Resources/LunarAudioBank referencia los WAV originales. Plasma reutiliza la familia sonora Fusil_Lunar al no existir una familia plasma en el paquete. Los aliens sin isBoss se contraen y explotan por codigo; los jefes conservan su muerte. La explosion sintetizada no causa dano adicional. No se proporciono un clip FBX de explosion.
+MenuPrincipal es una escena nueva e independiente (no existia el menu descrito); no se modifican escenas de juego. Incluye inicio, continuar condicionado a partida_guardada, escucha de criaturas, volumen persistente y carga asincrona con contexto de la Condor. Continuar entra al juego: no implementa restauracion de una partida, pues no hay guardado asociado. El menu usa Luna Cero provisionalmente. Los cuatro PNG de monstruos del paquete son RGB opacos: no se colocan billboards hasta contar con recortes transparentes. No se recrea el escenario 3D descrito, que no se encontro en este proyecto.
+Herramientas de IA: ChatGPT/OpenAI para conceptos visuales y prompts; Tripo para modelos importados segun los nombres de archivos. La procedencia y autoria de los recortes de companeros debe confirmarse antes de atribuir herramientas adicionales.
+
+
+Validacion en Unity: LUNA_SOUND_SMOKE_OK (106 clips, cinco botones, carga del menu al mapa, explosion comun con sonido y jefe sin explosion). Menu de prueba: Luna Cero > Probar audio menu y explosion. Sonidos de carga sostenida y sobrecalentamiento quedan importados para futuras mecanicas.
+
+
+## Correcciones cooperativas y modelos de municion
+El perfil de transporte de AWS es losesspaces-4 (GET /rooms responde 200; losesspaces-5 respondia 409). La compatibilidad entre jugadores se valida aparte mediante luna-coop-6 y firma del inventario de objetos del mapa. Ambos jugadores deben usar la misma compilacion nueva. No se ha modificado el servicio AWS ni el relay desplegado.
+Los estados incluyen arma equipada y secuencia para descartar paquetes antiguos; los objetos cargados se ven junto al astronauta remoto. La suelta espera confirmacion fiable y descarta snapshots anteriores. Las piezas se envian en grupos de 30, dentro del limite UDP. El rigidbody se coloca en el punto de suelta antes de reactivar fisica. Radar: orientacion estable y estados remotos ordenados. Movimiento: contacto ampliado en pendientes y material sin friccion, comprobado en rampa de 35 grados.
+Modelos incorporados: llave inglesa, tubo de metal, municion de pistola/rifle/escopeta y cartucho individual de pistola. Las cajas suministran municion compatible con armas del inventario. No hay modelos nuevos de extintor/barra/escombro ni municion plasma en las carpetas actuales; conservan su aspecto anterior.
+Prueba: Luna Cero > Probar correcciones multijugador. Exportacion: Luna Cero > Exportar Windows cooperativo. La prueba usa dos conexiones UDP locales y reenvio, serializacion de estados, rechazo de paquetes antiguos, agarre/suelta y fisica de pendientes. No sustituye una partida manual entre dos PCs por Internet.
+
+
+Validacion final de estas correcciones: LUNA_COOP_REGRESSION_OK y LUNA_COOP_WINDOWS_OK. Exportacion disponible en Builds/LunaCero-Coop6/LunaCero.exe; copiar la carpeta completa a ambas PCs. Se verifico cambio rifle/escopeta a traves del paquete real, confirmacion de suelta y descarte de snapshots atrasados, ademas de transporte UDP y pendientes. AWS GET /rooms?build=losesspaces-4: 200. Pendiente una partida manual entre dos PCs por Internet.
+
+
+## Revision Coop7: escala y colinas
+La llave se normaliza por su mayor dimension (55 cm en el mundo) y los contundentes se limitan a 38 cm / 13 cm de ancho en primera persona. Se suaviza el terreno del mapa grande limitando sus gradientes; el terreno original queda en Terreno_AntesPendientes.asset. Los objetos se reajustan en altura, las rampas antiguas se desactivan y se hornea de nuevo la navegacion. El barrido de los bots no bloquea su desplazamiento normal contra el propio TerrainCollider; los muros y rocas mantienen colision. Prueba LUNA_TERRAIN_TEST_OK: jugador con cuatro colliders y alien recorren una subida real de 10 m y 3.5 m de desnivel; escala de llave en mundo y manos validada. Version de partida luna-coop-7 para impedir mezclar mapas anteriores. Exportacion: Builds/LunaCero-Coop7, distribuir carpeta completa a todos los jugadores.
+
+
+## Lost in Space: presentacion y final de mision
+Nombre final del juego: Lost in Space; se conservan namespaces y rutas LunaCero para no romper referencias. El video del usuario (Gemini) se conserva fuera del proyecto y se integra una copia H.264 baseline/AAC de 33.625 segundos (39.625 originales menos seis segundos finales), en StreamingAssets/LostInSpace_Intro.mp4. Espacio, Escape o el boton permiten omitirlo. El menu solo reproduce la intro una vez por sesion, con opcion para repetirla. Se conserva el contenido del video original, incluidos sus fundidos oscuros.
+Nuevo fondo lunar y logo: generados con OpenAI ImageGen para este proyecto. Los astronautas y criaturas son los modelos 3D existentes, iluminados y animados en tiempo real; no son sprites. Tripulacion, equipo, registros de audio, volumen, pantalla completa y calidad tienen paneles funcionales. Buscar sala abre el navegador online tras cargar la escena. La carga asincrona conserva la historia de la Condor y el objetivo de las cinco piezas.
+Al instalar la quinta pieza, el anfitrion inicia el despegue y envia una notificacion fiable a los invitados. Cada cliente muestra la secuencia, victoria y regreso al menu. El final utiliza una representacion visual de la Condor con el modelo disponible, sin modificar el mapa. No se agrega guardado de partidas: solo se registra localmente la mision completada. Version cooperativa: lost-in-space-8; todos deben usar la misma compilacion. Distribucion: Builds/LostInSpace (copiar carpeta completa). Prueba automatica: Lost in Space > Probar introduccion y mision completa.
+
+
+Validacion final: LOST_FINAL_TEST_OK y exportacion Windows correcta en Builds/LostInSpace. Comprobados reproduccion del video de 33.625 s, omision, personajes 3D, paneles, carga del mapa, cinco piezas instaladas, despegue, victoria y retorno al menu. El video exportado coincide por SHA-256 con StreamingAssets. El shader del fondo se referencia desde LostInSpaceArt para conservarlo en el ejecutable.
+

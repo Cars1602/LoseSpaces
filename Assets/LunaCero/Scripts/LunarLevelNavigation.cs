@@ -47,8 +47,8 @@ namespace LunaCero
             var settings = NavMesh.GetSettingsByIndex(0);
             settings.agentRadius = agentRadius;
             settings.agentHeight = agentHeight;
-            settings.agentSlope = 40f;
-            settings.agentClimb = 0.5f;
+            settings.agentSlope = 45f;
+            settings.agentClimb = 0.65f;
             if (voxelSize > 0f)
             {
                 settings.overrideVoxelSize = true;

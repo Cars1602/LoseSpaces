@@ -234,23 +234,25 @@ namespace LunaCero
 
         private void OnGUI()
         {
-            if (player == null) return;
-            float scale = Mathf.Max(0.5f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
-            Matrix4x4 previous = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
-            float width = Screen.width / scale;
+            if (player == null || LunarPlayerRole.MenuOpen || LostInSpaceFinale.Active) return;
+            var size = LunarHud.Begin(out var previous);
+            float width = size.x;
             var station = NearestStation(player.transform.position);
-            string stationText = station == null ? "Explora para encontrar una estacion" : $"Estacion medica: {Vector3.Distance(station.transform.position, player.transform.position):0} m";
-            GUI.Box(new Rect(width - 320, 15, 300, 105), $"{stationText}\nHorda: {Wave} | Proxima: {Mathf.Max(0, nextWave - Time.time):0}s\nAliens: {ActiveEnemies}/{maximumEnemies} | Bajas: {Kills}\nEstaciones: {StationsReached} | Jefes: {BossKindsDefeated}/4");
-            if (Time.time < announceUntil) GUI.Box(new Rect(width / 2 - 280, 175, 560, 35), announcement);
-            if (BossKindsDefeated >= 4) GUI.Box(new Rect(width / 2 - 220, 270, 440, 50), "CUATRO JEFES ELIMINADOS\nLa exploracion y las hordas continuan.");
+            // Dos lineas bajo el soporte vital: estacion mas cercana (con direccion) y la horda.
+            float x = width - 272, y = LunarPlayerCombat.VitalsPanelBottom + 10;
+            string stationText = "Explora para encontrar una estacion";
             if (station != null)
             {
                 Vector3 direction = station.transform.position - player.transform.position;
                 float angle = Vector3.SignedAngle(player.transform.forward, Vector3.ProjectOnPlane(direction, Vector3.up), Vector3.up);
-                string guidance = Mathf.Abs(angle) < 20 ? "ADELANTE" : angle > 0 ? "DERECHA" : "IZQUIERDA";
-                GUI.Label(new Rect(width / 2 - 130, Screen.height / scale - 125, 360, 25), $"+ Estacion: {guidance} ({direction.magnitude:0} m)");
+                string arrow = Mathf.Abs(angle) < 20 ? "^" : angle > 0 ? ">" : "<";
+                stationText = $"Estacion medica  {direction.magnitude:0} m  {arrow}";
             }
+            LunarHud.Icon(new Rect(x, y + 4, 14, 14), LunarHud.Bubble, new Color(0.3f, 1f, 0.6f));
+            GUI.Label(new Rect(x + 20, y, 290, 22), stationText, LunarHud.Label);
+            GUI.Label(new Rect(x, y + 24, 300, 20), $"Horda {Wave}  |  proxima en {Mathf.Max(0, nextWave - Time.time):0} s  |  Bajas {Kills}", LunarHud.Small);
+            if (Time.time < announceUntil) LunarHud.Prompt(width / 2, 70, null, announcement, null);
+            if (BossKindsDefeated >= 4 && Time.time < announceUntil) LunarHud.Prompt(width / 2, 125, null, "CUATRO JEFES ELIMINADOS", null, true);
             GUI.matrix = previous;
         }
     }

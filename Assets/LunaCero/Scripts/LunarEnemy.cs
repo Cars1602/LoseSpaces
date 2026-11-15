@@ -41,6 +41,7 @@ namespace LunaCero
             bodyCollider = GetComponent<CapsuleCollider>();
             bodyRigidbody = GetComponent<Rigidbody>();
             health.Died += Die;
+            if (GetComponent<LunarAlienAudio>() == null) gameObject.AddComponent<LunarAlienAudio>();
             Reach = attackRange;
             if (bodyCollider != null)
             {
@@ -55,6 +56,9 @@ namespace LunaCero
                 agent.height = Mathf.Max(agent.height, bodyCollider.height);
             }
             agent.autoRepath = true;
+            // Giros y arranques mas suaves y rapidos: sin patinar de lado ni frenar en seco en cada esquina.
+            agent.angularSpeed = Mathf.Max(agent.angularSpeed, 420f);
+            agent.acceleration = Mathf.Max(agent.acceleration, agent.speed * 4f);
             agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
             if (bodyRigidbody != null)
             {
@@ -80,6 +84,8 @@ namespace LunaCero
         /// <summary>Copia de red: muestra la muerte que decidio el anfitrion.</summary>
         public void ShowRemoteDeath()
         {
+            GetComponent<LunarAlienAudio>()?.Death();
+            if (LunarAlienBurst.StartDeath(this)) { foreach (var c in GetComponentsInChildren<Collider>()) c.enabled=false; return; }
             foreach (var collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
             bool animated = false;
             if (TryGetComponent(out LunarAlienAnimation alienAnimation)) { alienAnimation.Die(); animated = alienAnimation.HasDeath; }
@@ -170,6 +176,9 @@ namespace LunaCero
             foreach (RaycastHit hit in hits)
             {
                 if (hit.collider == null || hit.collider.transform.IsChildOf(transform)) continue;
+                // Ordinary movement follows the baked ground. Sweeping a capsule into that same
+                // ground must not cancel the agent's uphill or downhill progress.
+                if(!busy && agent.enabled && agent.isOnNavMesh && hit.collider is TerrainCollider) continue;
                 // El suelo y las pendientes transitables no son paredes laterales al avanzar
                 // o despegar. Al descender si se conservan para que el salto aterrice encima.
                 if (hit.normal.y > 0.62f && movement.y >= -0.01f) continue;
@@ -221,7 +230,7 @@ namespace LunaCero
             {
                 Stop();
                 Vector3 facing = Vector3.ProjectOnPlane(target.transform.position - transform.position, Vector3.up);
-                if (facing.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(facing);
+                if (facing.sqrMagnitude > 0.01f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(facing), 360f * Time.deltaTime);
                 if (Time.time >= nextAttack)
                 {
                     nextAttack = Time.time + attackInterval;
@@ -273,6 +282,8 @@ namespace LunaCero
             Stop();
             agent.enabled = false;
             foreach (var collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
+            GetComponent<LunarAlienAudio>()?.Death();
+            if (LunarAlienBurst.StartDeath(this)) return;
             var visual = transform.Find("Visual");
             var animated = GetComponent<LunarRiderAnimation>();
             bool animatedDeath = false;
@@ -313,4 +324,5 @@ namespace LunaCero
         }
     }
 }
+
 

@@ -1,0 +1,55 @@
+LUNA CERO — GUIA DE USO
+
+1. DISPARAR
+Elegir al azar Disparo_01, Disparo_02 o Disparo_03 en cada disparo. Su tono
+y textura varian ligeramente manteniendo la identidad del arma. En el fusil,
+disparar a intervalos de unos 0,105 s para la cadencia de la muestra; dejar
+que las colas se solapen. Rafaga_3_Disparos es una alternativa ya montada:
+no superponerla con tres disparos individuales del mismo evento.
+Impacto_Energia pertenece al punto donde llega el haz; no al arma.
+
+2. CARGAR UN DISPARO DE ENERGIA (OPCIONAL SEGUN LA MECANICA DEL JUEGO)
+Al mantener pulsado: Carga_Inicio.
+Al terminar: transicion corta de unos 30 ms hacia Carga_Sostenida_LOOP.
+El bucle dura exactamente 2 s; repetir hasta disparar o cancelar.
+Al alcanzar el umbral: Carga_Lista, una sola vez, por encima del bucle.
+Al soltar con carga: detener el bucle con salida corta y Disparo_Cargado.
+Al cancelar: detener el bucle con salida corta y Carga_Cancelar.
+Estas piezas no estan montadas como una sola animacion; permiten ajustar
+el tiempo de carga a las reglas del juego.
+
+3. RECARGAR MUNICION / CAMBIAR CELDA
+Opcion sencilla: reproducir Recarga_Completa en la animacion de recarga.
+Opcion por eventos: usar solamente Recarga_Extraer_Celda,
+Recarga_Insertar_Celda y Recarga_Activar_Energia en las marcas de animacion.
+Las duraciones de las versiones completas son 1,5 s pistola, 2,1 s escopeta,
+1,8 s fusil y 2,5 s precision. Las marcas exactas estan en
+Armas/TIEMPOS_DE_RECARGA.json. Cambiarlas segun la animacion del juego.
+
+4. OTRAS ACCIONES
+Recoger_Arma: obtener el arma del mundo o de una caja.
+Equipar / Guardar: cambios en el inventario activo.
+Sin_Energia: intento de disparo sin celda o energia disponible.
+Sobrecalentamiento: aviso al entrar en bloqueo por temperatura.
+Enfriamiento: descarga de calor y recuperacion; si corresponde a tu mecanica.
+Mira_Entrar / Mira_Salir: solo para el rifle de precision.
+
+5. RECOGER MUNICIONES
+En cada tipo usar aleatoriamente Recoger_01, Recoger_02 o Recoger_03.
+Inventario_Lleno es un aviso comun, no una recogida exitosa.
+Las imagenes muestran el objeto asociado a cada sonido.
+
+6. LOBBY / MENU
+Musica: activar repeticion completa de 0 a 96 s, sin espacios ni pausas.
+Ambiente: activar repeticion de 0 a 48 s. Puede sonar solo o, mas bajo,
+debajo de la musica. Los bucles WAV ya conservan continuidad en los limites.
+Aplicar un fundido de entrada de 1 a 2 s al abrir el menu y otro de salida
+al entrar a partida, sin fundidos automaticos en cada vuelta del bucle.
+Las muestras MP3 de la conversacion son para revisar, no son los masters.
+
+7. MEZCLA EN EL JUEGO
+Efectos mono con posicionamiento 3D; musica y ambiente stereo en buses
+separados. Ajustar las distancias, volumen y reverberacion al escenario.
+Reducir un poco la musica mientras hay avisos importantes. Evitar poner
+una reverberacion larga en todos los disparos: puede tapar su articulacion.
+Las bases de monstruos son vocalizaciones con pausas, no bucles continuos.

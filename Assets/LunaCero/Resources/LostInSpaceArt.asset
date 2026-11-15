@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 294c982155730134eb9bb9345ee2aa0b, type: 3}
+  m_Name: LostInSpaceArt
+  m_EditorClassIdentifier: 
+  background: {fileID: 2800000, guid: 5a10885f1918bdb42a8a4a0cb378b737, type: 3}
+  logo: {fileID: 2800000, guid: 46ec85b37714e9440a2fd8573ae21583, type: 3}
+  backdropShader: {fileID: 10752, guid: 0000000000000000f000000000000000, type: 0}
+  astronaut: {fileID: 7257448136871745446, guid: 5ed809b9248ab414e86533b502e6a9ac, type: 3}
+  common: {fileID: 6392658563129594484, guid: 1de2b2fb2f43c77428d4a95aacc62c9d, type: 3}
+  stalker: {fileID: 7028956708901985122, guid: 7c18e4df134515f428f8a749e6c05916, type: 3}
+  spitter: {fileID: 7262062036789573151, guid: 6fd1e55197a2337458ff68e1655b9f6a, type: 3}
+  giant: {fileID: 2057865715356838675, guid: 6a255713c6d52b546a7a1b05b9c0f74e, type: 3}
+  ship: {fileID: 919132149155446097, guid: 94875a545921d3145a297849ee57f9a5, type: 3}

@@ -1,0 +1,26 @@
+{
+  "Pistola_Lunar": {
+    "completa_duracion_s": 1.5,
+    "extraer_s": 0.02,
+    "insertar_s": 0.75,
+    "activar_s": 0.88
+  },
+  "Escopeta_de_Pulsos": {
+    "completa_duracion_s": 2.1,
+    "extraer_s": 0.02,
+    "insertar_s": 1.05,
+    "activar_s": 1.48
+  },
+  "Fusil_Lunar": {
+    "completa_duracion_s": 1.8,
+    "extraer_s": 0.02,
+    "insertar_s": 0.9,
+    "activar_s": 1.18
+  },
+  "Rifle_de_Precision": {
+    "completa_duracion_s": 2.5,
+    "extraer_s": 0.02,
+    "insertar_s": 1.25,
+    "activar_s": 1.88
+  }
+}

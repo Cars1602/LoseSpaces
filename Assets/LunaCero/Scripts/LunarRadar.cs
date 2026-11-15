@@ -20,17 +20,25 @@ namespace LunaCero
         private LunarRepairPoint repair;
         private LunarPlayerController controller;
         private float nextScan;
+        private float stableYaw;
+        private Vector3 stableOrigin;
         private static Texture2D disc, ring, dot, arrow;
         private GUIStyle crewStyle, markerStyle;
 
         public Rect Area => new Rect(position.x, position.y, size, size + (crew.Count > 0 ? 24 + crew.Count * 34 : 0));
 
-        private void Awake() { controller = GetComponent<LunarPlayerController>(); }
+        private void Awake() { controller = GetComponent<LunarPlayerController>(); stableOrigin=transform.position; stableYaw=transform.eulerAngles.y; }
+        private void LateUpdate()
+        {
+            float yaw=controller!=null && controller.View!=null?controller.View.eulerAngles.y:transform.eulerAngles.y;
+            stableYaw=Mathf.LerpAngle(stableYaw,yaw,1-Mathf.Exp(-18*Time.unscaledDeltaTime));
+            stableOrigin=transform.position;
+        }
 
         private void Update()
         {
-            if (Time.time < nextScan) return;
-            nextScan = Time.time + scanInterval;
+            if (Time.unscaledTime < nextScan) return;
+            nextScan = Time.unscaledTime + scanInterval;
             enemies.Clear(); enemies.AddRange(FindObjectsOfType<LunarEnemy>());
             parts.Clear(); parts.AddRange(FindObjectsOfType<LunarShipPart>());
             if (repair == null) repair = FindObjectOfType<LunarRepairPoint>();
@@ -43,7 +51,7 @@ namespace LunaCero
             loot.Clear();
             if (showLoot)
                 foreach (var pickup in FindObjectsOfType<LunarPickup>())
-                    if (!pickup.IsHeld && (pickup.kind == LunarPickupKind.Weapon || pickup.kind == LunarPickupKind.Ammo || pickup.kind == LunarPickupKind.Medkit))
+                    if (!pickup.IsHeld && !pickup.RemotelyHeld && (pickup.kind == LunarPickupKind.Weapon || pickup.kind == LunarPickupKind.Ammo || pickup.kind == LunarPickupKind.Medkit))
                         loot.Add(pickup);
         }
 
@@ -75,7 +83,7 @@ namespace LunaCero
             Draw(Texture2D.whiteTexture, new Rect(center.x, center.y - 1, radius - 4, 2), new Color(0.4f, 1f, 0.6f, 0.45f));
             GUI.matrix = beforeSweep;
 
-            float yaw = controller != null && controller.View != null ? controller.View.eulerAngles.y : transform.eulerAngles.y;
+            float yaw = stableYaw;
             Quaternion toLocal = Quaternion.Euler(0, -yaw, 0);
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 6f);
 
@@ -83,7 +91,7 @@ namespace LunaCero
             if (showLoot)
                 foreach (var pickup in loot)
                 {
-                    if (pickup == null || pickup.IsHeld) continue;
+                    if (pickup == null || pickup.IsHeld || pickup.RemotelyHeld) continue;
                     Color color = pickup.kind == LunarPickupKind.Weapon ? new Color(1f, 0.85f, 0.2f) : pickup.kind == LunarPickupKind.Ammo ? new Color(0.4f, 0.9f, 1f) : Color.white;
                     Blip(pickup.transform.position, toLocal, center, radius, false, 5, color);
                 }
@@ -165,7 +173,7 @@ namespace LunaCero
 
         private Vector2? Project(Vector3 world, Quaternion toLocal, Vector2 center, float radius, bool clampToEdge)
         {
-            Vector3 offset = toLocal * Vector3.ProjectOnPlane(world - transform.position, Vector3.up);
+            Vector3 offset = toLocal * Vector3.ProjectOnPlane(world - stableOrigin, Vector3.up);
             Vector2 flat = new Vector2(offset.x, -offset.z) / Mathf.Max(1f, range) * (radius - 8);
             if (flat.magnitude > radius - 8)
             {

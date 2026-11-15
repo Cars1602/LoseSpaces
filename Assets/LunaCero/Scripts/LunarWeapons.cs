@@ -88,6 +88,7 @@ namespace LunaCero
         private static LunarWeaponData Melee(string id, string name, float damage, float interval, float range, int durability, float stagger, Color color, Vector3 size) =>
             new LunarWeaponData
             {
+                model = Resources.Load<GameObject>("LunarWeapons/"+id), pickupModel = Resources.Load<GameObject>("LunarWeapons/"+id),
                 id = id, displayName = name, mode = LunarFireMode.Melee, damage = damage, fireInterval = interval, automatic = true,
                 range = range, magazineSize = 1, reloadDuration = 0, startReserve = 0, ammoPickupScale = 0, durability = durability,
                 stagger = stagger, color = color, beamColor = Color.white, viewSize = size

@@ -19,11 +19,13 @@ namespace LunaCero
     public sealed class LunarSession : MonoBehaviour
     {
         public enum Mode { Deciding, Solo, Host, Client }
-        public const string Build = "losesspaces-5";
+        public const string Build = "losesspaces-4"; // Profile supported by the deployed relay API.
+        public const string GameProtocol = "lost-in-space-8"; // Validated directly between players.
         public const string ApiHost = "107.23.18.43";
         // Huella SHA-256 del certificado del servidor (autofirmado): solo se habla con ese servidor.
         public const string PinnedCertificate = "74B41A83383B162623A74A8E3662941A9ED903DAC935CBE0082ED1CD318E8B44";
 
+        public static bool OpenOnlineOnNextScene;
         public static LunarSession Instance { get; private set; }
         public static Mode Current => Instance != null ? Instance.mode : Mode.Solo;
         public static bool Deciding => Instance != null && Instance.mode == Mode.Deciding && Instance.gameScene;
@@ -70,6 +72,7 @@ namespace LunaCero
         private void OnScene()
         {
             gameScene = FindObjectOfType<LunarPlayerCombat>() != null && FindObjectOfType<LunarHordeDirector>() != null;
+            if(gameScene && OpenOnlineOnNextScene) { OpenOnlineOnNextScene=false; screen=Screen.Online; RefreshOnline(); }
             bool automated = LunarAutomation.Running;
             if (!gameScene || automated) { if (mode == Mode.Deciding && automated) mode = Mode.Solo; return; }
             if (mode == Mode.Deciding) { Time.timeScale = 0f; Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
@@ -104,6 +107,12 @@ namespace LunaCero
             if (FindObjectOfType<LunarCoop>() == null) new GameObject("Cooperativo (red)").AddComponent<LunarCoop>();
         }
 
+        public void ReturnToMainMenu()
+        {
+            Shutdown();mode=Mode.Deciding;MatchStarted=false;gameScene=false;screen=Screen.Main;
+            LunarPlayerRole.Chosen=null;Time.timeScale=1;Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
+            SceneManager.LoadScene("MenuPrincipal");
+        }
         private void StartSolo()
         {
             mode = Mode.Solo;
@@ -115,6 +124,7 @@ namespace LunaCero
         /// <summary>Sale de la sala y vuelve a empezar el mapa con el menu (el mundo se reinicia).</summary>
         public void Leave(string reason = "")
         {
+            if(LostInSpaceFinale.Active){ReturnToMainMenu();return;}
             Shutdown();
             mode = Mode.Deciding;
             screen = Screen.Main;
@@ -267,7 +277,7 @@ namespace LunaCero
             var panel = new Rect(width / 2 - 300, Mathf.Max(30, height / 2 - 270), 600, 540);
             Fill(panel, new Color(0.05f, 0.07f, 0.11f, 0.97f));
             GUILayout.BeginArea(new Rect(panel.x + 24, panel.y + 18, panel.width - 48, panel.height - 36));
-            GUILayout.Label("LUNA CERO", title);
+            GUILayout.Label("LOST IN SPACE", title);
             GUILayout.Label("Tripulacion de 1 a 4 astronautas", label);
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();

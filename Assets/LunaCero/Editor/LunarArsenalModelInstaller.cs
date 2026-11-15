@@ -48,10 +48,11 @@ namespace LunaCero.Editor
             AssetDatabase.SaveAssets();
             Debug.Log("LUNA_ARSENAL_MODELS_OK: pistola, escopeta, rifle, plasma y riel con modelos texturizados, sin colision extra.");
         }
-        static void Build(string name, string id, float length)
+        /// <param name="flip">Gira 180 grados el eje largo (la llave inglesa venia con la cabeza en el mango).</param>
+        public static void Build(string name, string id, float length, string sourceFolder = null, bool flip = false)
         {
-            string folder = "Assets/Armas/" + name;
-            string path = folder + "/" + name + ".fbx";
+            string folder = sourceFolder ?? ("Assets/Armas/" + name);
+            string path = sourceFolder == null ? folder + "/" + name + ".fbx" : AssetDatabase.FindAssets("t:Model",new[]{folder}).Select(AssetDatabase.GUIDToAssetPath).First(p=>p.EndsWith(".fbx",StringComparison.OrdinalIgnoreCase));
             var importer = AssetImporter.GetAtPath(path) as ModelImporter;
             if (importer == null) throw new Exception("Falta " + path);
             importer.importCameras = importer.importLights = importer.addCollider = false;
@@ -68,10 +69,11 @@ namespace LunaCero.Editor
                 var bounds = Bounds(root.transform,renderers);
                 // Estos FBX usan +X como largo del arma y +Z como parte superior.
                 // En el juego el canon debe apuntar a +Z y la parte superior quedar en +Y.
-                if (bounds.size.x > bounds.size.z)
+                if (sourceFolder != null && bounds.size.y > Mathf.Max(bounds.size.x,bounds.size.z)) model.transform.localRotation=Quaternion.Euler(flip?-90:90,0,0);
+                else if (bounds.size.x > bounds.size.z)
                     model.transform.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.right);
                 bounds = Bounds(root.transform,renderers);
-                model.transform.localScale *= length / Mathf.Max(0.001f,bounds.size.z);
+                model.transform.localScale *= length / Mathf.Max(0.001f, sourceFolder != null ? Mathf.Max(bounds.size.x,bounds.size.y,bounds.size.z) : bounds.size.z);
                 bounds = Bounds(root.transform,renderers);
                 model.transform.localPosition -= bounds.center;
                 var texture = AssetDatabase.FindAssets("t:Texture2D",new[]{folder}).Select(AssetDatabase.GUIDToAssetPath).First(p=>p.Contains("basecolor"));

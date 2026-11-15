@@ -73,6 +73,8 @@ namespace LunaCero
             status = GetComponent<LunarPlayerStatus>();
             vitals = GetComponent<LunarVitals>();
             body.useGravity = false;
+            var walkingMaterial=new PhysicMaterial("Lunar movement") { staticFriction=0, dynamicFriction=0, frictionCombine=PhysicMaterialCombine.Minimum, bounciness=0 };
+            foreach(var c in GetComponentsInChildren<Collider>()) if(c.attachedRigidbody==body) c.material=walkingMaterial;
             body.constraints = RigidbodyConstraints.FreezeRotation;
             body.interpolation = RigidbodyInterpolation.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
@@ -146,7 +148,7 @@ namespace LunaCero
                 return;
             }
             bool supported = ProbeGround();
-            IsGrounded = supported && Time.time >= ignoreGroundUntil && Vector3.Dot(body.velocity, groundNormal) <= 0.5f;
+            IsGrounded = supported && Time.time >= ignoreGroundUntil && Vector3.Dot(body.velocity, groundNormal) <= 1.2f;
             Quaternion heading = Quaternion.Euler(0f, yaw, 0f);
             body.MoveRotation(heading);
             if (role == null) TryGetComponent(out role);
@@ -157,6 +159,7 @@ namespace LunaCero
             if (IsGrounded)
             {
                 desired = Vector3.ProjectOnPlane(desired, groundNormal).normalized * desired.magnitude;
+                // Preserve tangential Y velocity while accelerating up ramps.
                 horizontal = Vector3.ProjectOnPlane(body.velocity, groundNormal);
             }
             horizontal = Vector3.MoveTowards(horizontal, desired, (IsGrounded ? acceleration : airAcceleration) * Time.fixedDeltaTime);
@@ -188,8 +191,8 @@ namespace LunaCero
         {
             // The root is at the soles. Ignore all four colliders belonging to this body.
             int count = Physics.SphereCastNonAlloc(body.position + Vector3.up * 0.28f, 0.18f,
-                Vector3.down, groundHits, 0.1f + groundProbeDistance, groundLayers, QueryTriggerInteraction.Ignore);
-            float minNormalY = Mathf.Cos(maxSlope * Mathf.Deg2Rad);
+                Vector3.down, groundHits, 0.1f + Mathf.Max(groundProbeDistance,0.25f), groundLayers, QueryTriggerInteraction.Ignore);
+            float minNormalY = Mathf.Cos(Mathf.Max(maxSlope,55f) * Mathf.Deg2Rad);
             float nearest = float.MaxValue;
             groundNormal = Vector3.up;
             for (int i = 0; i < count; i++)
@@ -217,7 +220,7 @@ namespace LunaCero
             Vector3 feet = body.position;
             bool blocked = false;
             foreach (var hit in Physics.RaycastAll(feet + Vector3.up * 0.08f, direction, reach, groundLayers, QueryTriggerInteraction.Ignore))
-                if (hit.rigidbody != body && !hit.transform.IsChildOf(transform) && hit.normal.y < Mathf.Cos(maxSlope * Mathf.Deg2Rad)) blocked = true;
+                if (hit.rigidbody != body && !hit.transform.IsChildOf(transform) && hit.normal.y < Mathf.Cos(Mathf.Max(maxSlope,55f) * Mathf.Deg2Rad)) blocked = true;
             if (!blocked) return;
 
             Vector3 ahead = feet + direction * reach;
@@ -229,7 +232,7 @@ namespace LunaCero
                 landing = hit;
                 nearest = hit.distance;
             }
-            if (nearest == float.MaxValue || landing.normal.y < Mathf.Cos(maxSlope * Mathf.Deg2Rad)) return;
+            if (nearest == float.MaxValue || landing.normal.y < Mathf.Cos(Mathf.Max(maxSlope,55f) * Mathf.Deg2Rad)) return;
             if (landing.rigidbody != null && !landing.rigidbody.isKinematic) return;
             float rise = landing.point.y - feet.y;
             if (rise < 0.04f || rise > stepHeight) return;
@@ -316,7 +319,7 @@ namespace LunaCero
             foreach (var hit in Physics.RaycastAll(candidate + Vector3.up * 5f, Vector3.down, 12f, groundLayers, QueryTriggerInteraction.Ignore))
             {
                 if (hit.rigidbody == body || hit.transform.IsChildOf(transform)) continue;
-                if (hit.normal.y < Mathf.Cos(maxSlope * Mathf.Deg2Rad) || hit.distance >= bestDistance) continue;
+                if (hit.normal.y < Mathf.Cos(Mathf.Max(maxSlope,55f) * Mathf.Deg2Rad) || hit.distance >= bestDistance) continue;
                 bestDistance = hit.distance;
                 safe = hit.point + Vector3.up * 0.05f;
                 foundGround = true;
@@ -352,7 +355,7 @@ namespace LunaCero
         private void OnGUI()
         {
             if (GetComponent<LunarPlayerCombat>() != null) return;
-            GUI.Box(new Rect(12, 12, 490, 80), "LUNA CERO | Prototipo de movimiento");
+            GUI.Box(new Rect(12, 12, 490, 80), "LOST IN SPACE | Prototipo de movimiento");
             GUI.Label(new Rect(24, 38, 460, 24), "WASD: mover | Shift: correr | Espacio: salto lunar");
             GUI.Label(new Rect(24, 60, 460, 24), "Raton: mirar | Esc: liberar | Clic: capturar | R: reiniciar");
             GUI.Label(new Rect(Screen.width / 2f - 5, Screen.height / 2f - 10, 20, 20), "+");
