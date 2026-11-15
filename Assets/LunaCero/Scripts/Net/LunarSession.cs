@@ -20,7 +20,7 @@ namespace LunaCero
     {
         public enum Mode { Deciding, Solo, Host, Client }
         public const string Build = "losesspaces-4"; // Profile supported by the deployed relay API.
-        public const string GameProtocol = "lost-in-space-8"; // Validated directly between players.
+        public const string GameProtocol = "lost-in-space-9"; // Validated directly between players.
         public const string ApiHost = "107.23.18.43";
         // Huella SHA-256 del certificado del servidor (autofirmado): solo se habla con ese servidor.
         public const string PinnedCertificate = "74B41A83383B162623A74A8E3662941A9ED903DAC935CBE0082ED1CD318E8B44";
@@ -115,6 +115,7 @@ namespace LunaCero
         }
         private void StartSolo()
         {
+            FindObjectOfType<LunarRepairPoint>()?.SetMissionPlayers(1);
             mode = Mode.Solo;
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.Locked;

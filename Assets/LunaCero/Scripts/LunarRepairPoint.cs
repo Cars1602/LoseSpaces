@@ -19,6 +19,45 @@ namespace LunaCero
         private void Awake(){if(GetComponent<LostInSpaceFinale>()==null)gameObject.AddComponent<LostInSpaceFinale>();}
         public int Installed => installed.Count;
         public bool Repaired => installed.Count >= requiredParts;
+        private LunarShipPart[] missionParts;
+        private readonly HashSet<int> optionalSections = new HashSet<int>();
+
+        /// <summary>Se conservan los objetos y sus IDs de red; solo se activan los necesarios.</summary>
+        public void SetMissionPlayers(int players)
+        {
+            if (missionParts == null)
+            {
+                missionParts = FindObjectsOfType<LunarShipPart>(true);
+                System.Array.Sort(missionParts, (a, b) => MissionOrder(a).CompareTo(MissionOrder(b)));
+            }
+            if (missionParts.Length == 0) return;
+            requiredParts = Mathf.Min(missionParts.Length, Mathf.Clamp(players, 1, 4) * 5);
+            optionalSections.Clear();
+            for (int i = 0; i < missionParts.Length; i++)
+            {
+                var part = missionParts[i];
+                if (part == null) continue;
+                bool needed = i < requiredParts || part.Installed;
+                if (part.gameObject.activeSelf != needed) part.gameObject.SetActive(needed);
+                if (!needed) optionalSections.Add(LunarShipRebuild.IndexOf(part.partName));
+            }
+            // Las secciones que no requieren recogida ya forman parte de la nave.
+            shownInstalled = -1;
+        }
+
+        private static int MissionOrder(LunarShipPart part)
+        {
+            int index = LunarShipRebuild.IndexOf(part.partName);
+            if (index < 0) return int.MaxValue;
+            var piece = LunarShipRebuild.Catalog[index];
+            // Primero una pieza principal de cada sistema; despues una secundaria por sistema.
+            int layer = piece.leader != null ? 0 : 1;
+            int group = index / 4;
+            int secondary = 0;
+            for (int i = group * 4; i < index; i++)
+                if (LunarShipRebuild.Catalog[i].leader == null) secondary++;
+            return (layer == 0 ? 0 : secondary + 1) * 5 + group;
+        }
 
         /// <summary>Cliente en red: las piezas las instala el anfitrion (se recibe con ApplyInstalled).</summary>
         [System.NonSerialized] public bool remote;
@@ -34,7 +73,7 @@ namespace LunaCero
 
         private void Update()
         {
-            if (Repaired || remote) return;
+            if (Repaired || remote || LunarPlayerRole.MenuOpen) return;
             foreach (var collider in Physics.OverlapSphere(transform.position, radius, ~0, QueryTriggerInteraction.Ignore))
             {
                 var part = collider.GetComponentInParent<LunarShipPart>();
@@ -86,6 +125,7 @@ namespace LunaCero
 
         private void Start()
         {
+            if (!LunarAutomation.Running && !LunarSession.InMultiplayer && !LunarSession.Deciding) SetMissionPlayers(1);
             hasDirector = FindObjectOfType<LunarHordeDirector>() != null;
             // Holograma de la nave Condor sobre el anillo: una seccion por cada pieza del catalogo.
             sections = LunarShipRebuild.BuildFrame(transform);
@@ -148,7 +188,7 @@ namespace LunaCero
                 // La pieza suelta desaparece: ahora es parte de la nave.
                 foreach (var r in part.GetComponentsInChildren<Renderer>()) r.enabled = false;
             }
-            for (int i = 0; i < sections.Length; i++) LunarShipRebuild.Paint(sections[i], i, filled.Contains(i));
+            for (int i = 0; i < sections.Length; i++) LunarShipRebuild.Paint(sections[i], i, filled.Contains(i) || optionalSections.Contains(i));
             if (smoke != null) { var emission = smoke.emission; emission.rateOverTime = 14f * (1f - done); }
             if (sparks != null) { var emission = sparks.emission; emission.rateOverTime = 10f * (1f - done); }
             if (statusLight != null) statusLight.color = Color.Lerp(new Color(1f, 0.25f, 0.15f), new Color(0.3f, 1f, 0.45f), done);

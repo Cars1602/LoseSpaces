@@ -23,6 +23,12 @@ namespace LunaCero
         private float stableYaw;
         private Vector3 stableOrigin;
         private static Texture2D disc, ring, dot, arrow;
+        private enum RadarIcon { Enemy, Boss, Resource, Repair, Weapon, Ammo, Medkit }
+        private static Texture2D[] icons;
+        public static Texture2D EnemyIcon { get { EnsureTextures(); return icons[(int)RadarIcon.Enemy]; } }
+        public static Texture2D ResourceIcon { get { EnsureTextures(); return icons[(int)RadarIcon.Resource]; } }
+        public static Texture2D RepairIcon { get { EnsureTextures(); return icons[(int)RadarIcon.Repair]; } }
+        public static Texture2D PlayerIcon { get { EnsureTextures(); return arrow; } }
         private GUIStyle crewStyle, markerStyle;
 
         public Rect Area => new Rect(position.x, position.y, size, size + (crew.Count > 0 ? 24 + crew.Count * 34 : 0));
@@ -93,14 +99,16 @@ namespace LunaCero
                 {
                     if (pickup == null || pickup.IsHeld || pickup.RemotelyHeld) continue;
                     Color color = pickup.kind == LunarPickupKind.Weapon ? new Color(1f, 0.85f, 0.2f) : pickup.kind == LunarPickupKind.Ammo ? new Color(0.4f, 0.9f, 1f) : Color.white;
-                    Blip(pickup.transform.position, toLocal, center, radius, false, 5, color);
+                    RadarIcon icon = pickup.kind == LunarPickupKind.Weapon ? RadarIcon.Weapon
+                        : pickup.kind == LunarPickupKind.Ammo ? RadarIcon.Ammo : RadarIcon.Medkit;
+                    Blip(pickup.transform.position, toLocal, center, radius, false, 8, color, icon);
                 }
             // Reparacion (verde) y piezas (azul): se muestran en el borde si estan lejos.
             if (repair != null && !repair.Repaired)
-                Blip(repair.transform.position, toLocal, center, radius, true, 12, new Color(0.3f, 1f, 0.45f));
+                Blip(repair.transform.position, toLocal, center, radius, true, 11, new Color(0.3f, 1f, 0.45f), RadarIcon.Repair);
             foreach (var part in parts)
                 if (part != null && !part.Installed)
-                    Blip(part.transform.position, toLocal, center, radius, true, 10, new Color(0.25f, 0.6f, 1f));
+                    Blip(part.transform.position, toLocal, center, radius, true, 9, new Color(0.25f, 0.6f, 1f), RadarIcon.Resource);
             // Enemigos (rojo) y jefes (calor)
             foreach (var enemy in enemies)
             {
@@ -109,12 +117,11 @@ namespace LunaCero
                 {
                     Vector2? p = Project(enemy.transform.position, toLocal, center, radius, true);
                     if (p == null) continue;
-                    float halo = 22f + 10f * pulse;
+                    float halo = 14f + 4f * pulse;
                     Draw(dot, new Rect(p.Value.x - halo / 2, p.Value.y - halo / 2, halo, halo), new Color(1f, 0.25f, 0.05f, 0.35f + 0.25f * pulse));
-                    Draw(dot, new Rect(p.Value.x - 7, p.Value.y - 7, 14, 14), new Color(1f, 0.55f, 0.1f));
-                    Draw(dot, new Rect(p.Value.x - 3.5f, p.Value.y - 3.5f, 7, 7), new Color(1f, 0.95f, 0.5f));
+                    DrawIcon(RadarIcon.Boss, p.Value, 11, new Color(1f, 0.55f, 0.1f));
                 }
-                else Blip(enemy.transform.position, toLocal, center, radius, false, 7, new Color(1f, 0.15f, 0.12f));
+                else Blip(enemy.transform.position, toLocal, center, radius, false, 8, new Color(1f, 0.15f, 0.12f), RadarIcon.Enemy);
             }
             // Dibujar al final para que enemigos y piezas no oculten a los companeros.
             DrawCrew(toLocal, center, radius, yaw, area);
@@ -149,13 +156,13 @@ namespace LunaCero
                 bool fallen = mate.Health != null && mate.Health.IsDead;
                 Color color = fallen ? new Color(1f, 0.5f, 0.3f) : Color.Lerp(mate.RoleColor, Color.white, 0.3f);
                 Vector2 point = Project(mate.transform.position, toLocal, center, radius, true).Value;
-                Draw(dot, new Rect(point.x - 11, point.y - 11, 22, 22), Color.black);
-                if (outside) Draw(ring, new Rect(point.x - 11, point.y - 11, 22, 22), color);
+                Draw(dot, new Rect(point.x - 8, point.y - 8, 16, 16), Color.black);
+                if (outside) Draw(ring, new Rect(point.x - 8, point.y - 8, 16, 16), color);
                 if (!fallen)
                 {
                     Matrix4x4 before = GUI.matrix;
                     GUIUtility.RotateAroundPivot(Mathf.DeltaAngle(yaw, mate.transform.eulerAngles.y), point);
-                    Draw(arrow, new Rect(point.x - 8, point.y - 10, 16, 20), color);
+                    Draw(arrow, new Rect(point.x - 6, point.y - 8, 12, 16), color);
                     GUI.matrix = before;
                 }
                 GUI.color = Color.white;
@@ -183,11 +190,19 @@ namespace LunaCero
             return center + flat;
         }
 
-        private void Blip(Vector3 world, Quaternion toLocal, Vector2 center, float radius, bool clamp, float diameter, Color color)
+        private void Blip(Vector3 world, Quaternion toLocal, Vector2 center, float radius, bool clamp, float diameter, Color color, RadarIcon icon)
         {
             Vector2? p = Project(world, toLocal, center, radius, clamp);
             if (p == null) return;
-            Draw(dot, new Rect(p.Value.x - diameter / 2, p.Value.y - diameter / 2, diameter, diameter), color);
+            DrawIcon(icon, p.Value, diameter, color);
+        }
+
+        private static void DrawIcon(RadarIcon icon, Vector2 point, float diameter, Color color)
+        {
+            Texture2D texture = icons[(int)icon];
+            // Borde oscuro fino para conservar contraste sobre anillos y barrido.
+            Draw(texture, new Rect(point.x - diameter / 2 - 1, point.y - diameter / 2 - 1, diameter + 2, diameter + 2), new Color(0, 0, 0, 0.9f));
+            Draw(texture, new Rect(point.x - diameter / 2, point.y - diameter / 2, diameter, diameter), color);
         }
 
         private static Rect Inset(Rect r, float amount) => new Rect(r.x + amount, r.y + amount, r.width - amount * 2, r.height - amount * 2);
@@ -213,6 +228,59 @@ namespace LunaCero
                     arrow.SetPixel(x, y, inside ? Color.white : Color.clear);
                 }
             arrow.Apply();
+            icons = new Texture2D[7];
+            for (int i = 0; i < icons.Length; i++) icons[i] = CreateIcon((RadarIcon)i);
+        }
+
+        // Simbolos geometricos simples, sin fuentes ni archivos externos; se crean una sola vez.
+        private static Texture2D CreateIcon(RadarIcon icon)
+        {
+            const int resolution = 48;
+            var texture = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false)
+            {
+                name = "Radar " + icon, wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear, hideFlags = HideFlags.DontSave
+            };
+            for (int y = 0; y < resolution; y++)
+                for (int x = 0; x < resolution; x++)
+                {
+                    float u = (x + 0.5f) / resolution * 2f - 1f;
+                    float v = (y + 0.5f) / resolution * 2f - 1f;
+                    float ax = Mathf.Abs(u), ay = Mathf.Abs(v);
+                    bool ink;
+                    switch (icon)
+                    {
+                        case RadarIcon.Enemy: // Rombo de amenaza.
+                            ink = ax + ay < 0.9f && ax + ay > 0.43f;
+                            break;
+                        case RadarIcon.Boss: // Corona de tres puntas.
+                            ink = ax < 0.86f && v > -0.65f && v < 0.65f &&
+                                (v < -0.08f || ax > 0.58f || ax < 0.19f);
+                            break;
+                        case RadarIcon.Resource: // Caja con division central.
+                            ink = ax < 0.8f && ay < 0.75f && (ax > 0.53f || ay > 0.49f || ax < 0.12f);
+                            break;
+                        case RadarIcon.Repair: // Engranaje con hueco central.
+                            float d = Mathf.Sqrt(u * u + v * v);
+                            ink = d > 0.29f && (d < 0.61f || (d < 0.9f &&
+                                (ax < 0.18f || ay < 0.18f || Mathf.Abs(ax - ay) < 0.17f)));
+                            break;
+                        case RadarIcon.Weapon: // Silueta de pistola.
+                            ink = (u > -0.8f && u < 0.85f && v > 0.06f && v < 0.58f) ||
+                                (u > -0.64f && u < -0.15f && v > -0.72f && v < 0.18f);
+                            break;
+                        case RadarIcon.Ammo: // Dos cartuchos.
+                            float cartridgeX = Mathf.Abs(ax - 0.4f);
+                            ink = cartridgeX < 0.23f && v > -0.74f && v < 0.78f - cartridgeX * 1.8f;
+                            break;
+                        default: // Cruz medica.
+                            ink = (ax < 0.24f && ay < 0.8f) || (ay < 0.24f && ax < 0.8f);
+                            break;
+                    }
+                    texture.SetPixel(x, y, ink ? Color.white : Color.clear);
+                }
+            texture.Apply();
+            return texture;
         }
 
         private static Texture2D Circle(int resolution, float inner, float outer, bool soft)

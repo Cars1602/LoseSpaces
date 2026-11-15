@@ -79,18 +79,28 @@ namespace LunaCero
         private float lastShot;
         private Transform hiddenRoot;
         private float nextLobby;
+        private int missionPlayers;
+        private void ApplyMissionPlayers(int count)
+        {
+            count = Mathf.Clamp(count, 1, 4);
+            if (missionPlayers == count) return;
+            // Tras iniciar solo aumenta: una desconexion nunca resta piezas al objetivo.
+            if (session.MatchStarted && missionPlayers > count) return;
+            missionPlayers = count;
+            if (repair != null) repair.SetMissionPlayers(count);
+        }
         private readonly Dictionary<int, byte> lobbyRoles = new Dictionary<int, byte>();
         private GUIStyle lobbyTitle, lobbyText;
 
-        private bool CanStartMatch => host && role != null && role.HasRole && Link.Peers.Count > 0 &&
+        private bool CanStartMatch => host && role != null && role.ReadyForMatch && Link.Peers.Count > 0 &&
             Link.Peers.Keys.All(id => id == Link.MyId || (remotes.TryGetValue(id, out var remote) && remote.Joined && remote.Role < LunarRoleDefinition.All.Length));
 
         private Packet LobbyPacket()
         {
-            var packet = new Packet(MsgLobby).Bool(session.MatchStarted).Byte(Link.Peers.Count);
+            var packet = new Packet(MsgLobby).Bool(session.MatchStarted).Byte(Mathf.Max(1, missionPlayers)).Byte(Link.Peers.Count);
             foreach (int id in Link.Peers.Keys.OrderBy(id => id))
             {
-                byte selected = id == Link.MyId ? (role != null && role.HasRole ? (byte)role.Role : (byte)255)
+                byte selected = id == Link.MyId ? (role != null && role.ReadyForMatch ? (byte)role.Role : (byte)255)
                     : remotes.TryGetValue(id, out var remote) && remote.Joined ? remote.Role : (byte)255;
                 packet.Byte(id).Byte(selected);
             }
@@ -109,7 +119,7 @@ namespace LunaCero
 
         private void OnGUI()
         {
-            if (session == null || Link == null || !LunarSession.WaitingForMatch || LunarPlayerRole.ChoosingRole) return;
+            if (session == null || Link == null || !LunarSession.WaitingForMatch || LunarPlayerRole.ChoosingRole || LunarMainMenu.ManualOpen) return;
             if (lobbyTitle == null)
             {
                 lobbyTitle = new GUIStyle(GUI.skin.label) { fontSize = 26, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
@@ -130,15 +140,16 @@ namespace LunaCero
             GUILayout.Label("SALA DE ESPERA", lobbyTitle);
             GUILayout.Label(session.RoomName, lobbyTitle);
             GUILayout.Space(16);
-            GUILayout.Label("Todos deben elegir su rol antes de iniciar.", lobbyText);
+            GUILayout.Label("Todos deben elegir su rol y terminar el manual antes de iniciar.", lobbyText);
+            GUILayout.Label($"Objetivo: {(repair != null ? repair.requiredParts : 5)} piezas (5 por jugador).", lobbyText);
             GUILayout.Space(12);
             foreach (var peer in Link.Peers.OrderBy(p => p.Key))
             {
                 byte selected = 255;
-                if (peer.Key == Link.MyId && role != null && role.HasRole) selected = (byte)role.Role;
+                if (peer.Key == Link.MyId && role != null && role.ReadyForMatch) selected = (byte)role.Role;
                 else if (host && remotes.TryGetValue(peer.Key, out var remote) && remote.Joined) selected = remote.Role;
                 else if (!host && lobbyRoles.TryGetValue(peer.Key, out byte value)) selected = value;
-                string readiness = selected < LunarRoleDefinition.All.Length ? LunarRoleDefinition.All[selected].title + " - LISTO" : "Eligiendo rol...";
+                string readiness = selected < LunarRoleDefinition.All.Length ? LunarRoleDefinition.All[selected].title + " - LISTO" : "Eligiendo rol / leyendo manual...";
                 GUILayout.Label($"{peer.Value}{(peer.Key == 0 ? " (anfitrion)" : "")}\n{readiness}", lobbyText, GUILayout.Height(58));
             }
             GUILayout.FlexibleSpace();
@@ -247,6 +258,7 @@ namespace LunaCero
         private void Update()
         {
             if (Link == null) return;
+            if (host) ApplyMissionPlayers(Mathf.Max(1, Link.Peers.Count));
             while (Link.Received.Count > 0)
             {
                 var (from, payload) = Link.Received.Dequeue();
@@ -461,7 +473,7 @@ namespace LunaCero
                 for(int offset=0;offset<carried.Count;offset+=30)
                 {
                 var batch=carried.Skip(offset).Take(30);
-                var packet=new Packet(MsgParts).UInt(++partsSequence).Byte(System.Math.Min(30,carried.Count-offset));
+                var packet=new Packet(MsgParts).UInt(++partsSequence).Byte(Mathf.Max(1, missionPlayers)).Byte(System.Math.Min(30,carried.Count-offset));
                 foreach (int i in batch)
                 {
                     var t = pickupTransforms[i];
@@ -519,10 +531,11 @@ namespace LunaCero
                 {
                     bool wasStarted = session.MatchStarted;
                     session.ApplyMatchStarted(packet.ReadBool());
+                    ApplyMissionPlayers(packet.ReadByte());
                     lobbyRoles.Clear();
                     int count = packet.ReadByte();
                     for (int i = 0; i < count; i++) lobbyRoles[packet.ReadByte()] = packet.ReadByte();
-                    if (!wasStarted && session.MatchStarted && role != null && role.HasRole)
+                    if (!wasStarted && session.MatchStarted && role != null && role.ReadyForMatch)
                     {
                         Cursor.lockState = CursorLockMode.Locked;
                         Cursor.visible = false;
@@ -630,6 +643,7 @@ namespace LunaCero
         private void ReadParts(Packet packet)
         {
             uint sequence=packet.ReadUInt();
+            ApplyMissionPlayers(packet.ReadByte());
             int count = packet.ReadByte();
             for (int n = 0; n < count; n++)
             {
@@ -686,7 +700,7 @@ namespace LunaCero
             byte flags = (byte)((controller.IsGrounded ? 1 : 0) | (health.IsDead ? 2 : 0) | (status != null && status.FlashlightOn ? 4 : 0) | (Time.unscaledTime - lastShot < 0.2f ? 8 : 0));
             float yaw = controller.View != null ? controller.View.eulerAngles.y : player.transform.eulerAngles.y;
             float speed = new Vector2(body.velocity.x, body.velocity.z).magnitude;
-            byte roleIndex = role != null && role.HasRole ? (byte)role.Role : (byte)255;
+            byte roleIndex = role != null && role.ReadyForMatch ? (byte)role.Role : (byte)255;
             return packet.UInt(++stateSequence).Byte(WeaponCode(player.CurrentWeapon?.Data.id)).Byte(roleIndex).Vec(player.transform.position).Angle(yaw).Angle(controller.Pitch).Float(speed).Byte(flags)
                 .Float(health.Current).Float(health.Maximum);
         }

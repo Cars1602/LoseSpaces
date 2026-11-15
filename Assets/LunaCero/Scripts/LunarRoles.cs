@@ -92,16 +92,17 @@ namespace LunaCero
         private static bool menuOpen;
         private bool ownsMenu;
         /// <summary>Hay una pantalla a pantalla completa (roles o menu de sala): sin controles del juego.</summary>
-        public static bool MenuOpen => menuOpen || LunarSession.Deciding || LunarSession.WaitingForMatch;
+        public static bool MenuOpen => menuOpen || LunarMainMenu.ManualOpen || LunarSession.Deciding || LunarSession.WaitingForMatch;
         public static bool ChoosingRole => menuOpen;
         private float protectedUntil;
         public float ProtectionSeconds => Mathf.Max(0f, protectedUntil - Time.unscaledTime);
         public bool SpawnProtected => !LunarAutomation.Running && (LunarSession.Deciding ||
-            (LunarSession.InMultiplayer && (!HasRole || LunarSession.WaitingForMatch || Time.unscaledTime < protectedUntil)));
+            (LunarSession.InMultiplayer && (!ReadyForMatch || LunarSession.WaitingForMatch || Time.unscaledTime < protectedUntil)));
         [SerializeField] private LunarRole role = LunarRole.Militar;
         [Tooltip("Mostrar la eleccion de rol al empezar la partida")]
         public bool askOnStart = true;
         public bool HasRole { get; private set; }
+        public bool ReadyForMatch { get; private set; }
         public LunarRole Role => role;
         public LunarRoleDefinition Definition => LunarRoleDefinition.Get(role);
         public event Action<LunarRoleDefinition> Changed;
@@ -161,6 +162,13 @@ namespace LunaCero
                 Cursor.visible = LunarSession.WaitingForMatch;
             }
             Changed?.Invoke(Definition);
+            if (LunarAutomation.Running) ReadyForMatch = true;
+            else LunarMainMenu.ShowAfterRole(() =>
+            {
+                if (this == null) return;
+                ReadyForMatch = true;
+                if (LunarSession.InMultiplayer) protectedUntil = Time.unscaledTime + 3f;
+            });
         }
 
         private void Update()

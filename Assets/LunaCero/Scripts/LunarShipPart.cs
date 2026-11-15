@@ -19,7 +19,7 @@ namespace LunaCero
         private static readonly System.Collections.Generic.HashSet<LunarShipPart> marked = new System.Collections.Generic.HashSet<LunarShipPart>();
         private static float nextRank;
         private void OnEnable() { all.Add(this); }
-        private void OnDisable() { all.Remove(this); }
+        private void OnDisable() { all.Remove(this); if (beacon != null) beacon.SetActive(false); }
 
         private static void Rank(Vector3 from)
         {
