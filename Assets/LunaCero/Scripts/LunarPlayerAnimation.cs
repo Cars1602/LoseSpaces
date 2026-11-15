@@ -17,6 +17,8 @@ namespace LunaCero
         private LunarPlayerStatus status;
         private string current;
         private float shotUntil;
+        private float emoteUntil;
+        public bool Emoting => Time.time < emoteUntil;
         private Vector3 hipsRest;
         [Tooltip("Baja/sube el modelo para que los pies toquen el suelo en cada animacion")]
         [SerializeField] private bool groundFeet = true;
@@ -24,7 +26,7 @@ namespace LunaCero
         private float restFootHeight;
         private float footOffset;
         private Vector3 modelBaseLocal;
-        public void Shot() { shotUntil = Time.time + 0.25f; }
+        public void Shot() { emoteUntil = 0f; shotUntil = Time.time + 0.25f; }
         public void Die() { Play("Muerte", 0.08f); }
         private void Awake()
         {
@@ -81,7 +83,26 @@ namespace LunaCero
             if (health != null && health.IsDead) { Die(); return; }
             float speed = new Vector2(body.velocity.x, body.velocity.z).magnitude;
             bool free = combat == null || (combat.CanAct && !combat.Reloading && !combat.Healing);
+            bool canEmote = free && !LunarPlayerRole.MenuOpen && !LostInSpaceFinale.Active && controller.IsGrounded &&
+                speed < 0.15f && (status == null || !status.IsControlled) &&
+                (combat == null || combat.HeldObject == null) && Time.time >= shotUntil &&
+                !Input.GetMouseButton(0) && !Input.GetMouseButton(1) &&
+                Mathf.Abs(Input.GetAxisRaw("Horizontal")) < 0.01f && Mathf.Abs(Input.GetAxisRaw("Vertical")) < 0.01f && !Input.GetButton("Jump");
+            if (!canEmote) emoteUntil = 0f;
+            if (canEmote && Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.B) && animator.HasState(0, Animator.StringToHash("Emote")))
+            {
+                if (Emoting) emoteUntil = 0f;
+                else
+                {
+                    float duration = 3f;
+                    foreach (var clip in animator.runtimeAnimatorController.animationClips)
+                        if (clip.name.ToLowerInvariant().Contains("emote")) { duration = clip.length; break; }
+                    emoteUntil = Time.time + duration;
+                    current = null;
+                }
+            }
             string state = !controller.IsGrounded ? "Saltar" :
+                Emoting ? "Emote" :
                 free && Time.time < shotUntil ? "Disparar" :
                 free && (status == null || !status.IsControlled) && speed < 0.15f &&
                 Cursor.lockState == CursorLockMode.Locked && Input.GetKey(KeyCode.C) ? "Cavar" :

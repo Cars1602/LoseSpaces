@@ -698,6 +698,7 @@ namespace LunaCero
         private Packet WriteState(Packet packet)
         {
             byte flags = (byte)((controller.IsGrounded ? 1 : 0) | (health.IsDead ? 2 : 0) | (status != null && status.FlashlightOn ? 4 : 0) | (Time.unscaledTime - lastShot < 0.2f ? 8 : 0));
+            if (player.TryGetComponent(out LunarPlayerAnimation animation) && animation.Emoting) flags |= 16;
             float yaw = controller.View != null ? controller.View.eulerAngles.y : player.transform.eulerAngles.y;
             float speed = new Vector2(body.velocity.x, body.velocity.z).magnitude;
             byte roleIndex = role != null && role.ReadyForMatch ? (byte)role.Role : (byte)255;
@@ -719,6 +720,7 @@ namespace LunaCero
             if (puppet == null || !puppet.AcceptSequence(sequence)) return;
             puppet.SetWeapon(WeaponId(weapon));
             puppet.Apply(position, yaw, pitch, speed, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0, (flags & 8) != 0, hp, max);
+            puppet.Emoting = (flags & 16) != 0;
             if (roleIndex < LunarRoleDefinition.All.Length) puppet.RoleColor = LunarRoleDefinition.All[roleIndex].color;
             if (Link.Peers.TryGetValue(puppet.Id, out string name)) puppet.DisplayName = name + (roleIndex < LunarRoleDefinition.All.Length ? " (" + LunarRoleDefinition.All[roleIndex].title + ")" : "");
         }

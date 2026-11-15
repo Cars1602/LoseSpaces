@@ -683,7 +683,7 @@ namespace LunaCero
                 GUI.Label(new Rect(hx + 6, 44, 470, 20), "WASD mover | Shift correr | Espacio saltar (en el aire: propulsor)", smallStyle);
                 GUI.Label(new Rect(hx + 6, 64, 470, 20), "Clic disparar/golpear | R recargar | F curar | E usar/recoger | G lanzar", smallStyle);
                 GUI.Label(new Rect(hx + 6, 84, 470, 20), "1-9 o rueda: cambiar arma | Clic derecho: apuntar (rifle de riel)", smallStyle);
-                GUI.Label(new Rect(hx + 6, 104, 470, 20), "V: primera / tercera persona | H ocultar ayuda", smallStyle);
+                GUI.Label(new Rect(hx + 6, 104, 470, 20), "B: emote | V: primera / tercera persona | H ocultar ayuda", smallStyle);
                 GUI.Label(new Rect(hx + 6, 124, 470, 20), "Esc libera el cursor | Clic vuelve a capturarlo", smallStyle);
                 if (status != null) GUI.Label(new Rect(hx + 6, 144, 470, 20), "Q empujar / liberarte (3 veces) | T linterna", smallStyle);
                 if (LunarShip.All.Count > 0) GUI.Label(new Rect(hx + 6, status != null ? 164 : 144, 470, 20), "La nave tiene armas, municion y oxigeno", smallStyle);

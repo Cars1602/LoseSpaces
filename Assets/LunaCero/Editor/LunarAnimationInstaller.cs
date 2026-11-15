@@ -11,7 +11,7 @@ namespace LunaCero.Editor
     public static class LunarAnimationInstaller
     {
         private const string ControllerPath = "Assets/LunaCero/Animations/Astronauta.controller";
-        private const string Version = "LunaCero.AnimationPack.v1";
+        private const string Version = "LunaCero.AnimationPack.v2.Emote";
         static LunarAnimationInstaller() { EditorApplication.delayCall += AutoInstall; }
         private static void AutoInstall()
         {
@@ -21,11 +21,11 @@ namespace LunaCero.Editor
             Install();
             EditorPrefs.SetBool(Application.dataPath + Version, true);
         }
-        [MenuItem("Luna Cero/Conectar animaciones (sin emote)")]
+        [MenuItem("Luna Cero/Conectar animaciones (con emote)")]
         public static void Install()
         {
             if (EditorApplication.isPlaying) throw new InvalidOperationException("Sal de Play primero.");
-            string[] names = { "Reposo", "Caminar", "Correr", "Saltar", "Disparar", "Muerte", "Cavar" };
+            string[] names = { "Reposo", "Caminar", "Correr", "Saltar", "Disparar", "Muerte", "Cavar", "Emote" };
             var clips = names.Select(name => Import(name)).ToArray();
             var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
             if (controller == null) controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
@@ -42,7 +42,7 @@ namespace LunaCero.Editor
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
             Verify(controller, names);
-            Debug.Log("LUNA_ANIMATION_PACK_OK: reposo, caminar, correr, saltar, disparar, muerte y cavar; emote excluido.");
+            Debug.Log("LUNA_ANIMATION_PACK_OK: reposo, caminar, correr, saltar, disparar, muerte, cavar y emote conectados.");
         }
         private static AnimationClip Import(string name)
         {
@@ -57,7 +57,8 @@ namespace LunaCero.Editor
             if (clips.Length == 0) clips = importer.defaultClipAnimations;
             foreach (var clip in clips)
             {
-                clip.loopTime = name != "Muerte" && name != "Saltar";
+                if (name == "Emote") clip.name = name;
+                clip.loopTime = name != "Muerte" && name != "Saltar" && name != "Emote";
                 clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;
                 clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;
             }

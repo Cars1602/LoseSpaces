@@ -22,6 +22,7 @@ namespace LunaCero
         private Vector3 targetPosition;
         private float yaw, pitch, speed;
         private bool grounded = true, dead, flashlight;
+        public bool Emoting { get; set; }
         private float shotUntil;
         private bool placed;
         public LunarHealth Health => health;
@@ -94,7 +95,7 @@ namespace LunaCero
             lamp.transform.rotation = Quaternion.Euler(pitch, yaw, 0);
             if(weaponAnchor!=null) weaponAnchor.localRotation=Quaternion.Euler(pitch,0,0);
             lamp.enabled = flashlight && !dead;
-            string state = dead ? "Muerte" : !grounded ? "Saltar" : Time.time < shotUntil ? "Disparar" : speed > 4.2f ? "Correr" : speed > 0.15f ? "Caminar" : "Reposo";
+            string state = dead ? "Muerte" : !grounded ? "Saltar" : Time.time < shotUntil ? "Disparar" : speed > 4.2f ? "Correr" : speed > 0.15f ? "Caminar" : Emoting ? "Emote" : "Reposo";
             if (animator != null && state != current && animator.HasState(0, Animator.StringToHash(state)))
             {
                 animator.CrossFadeInFixedTime(state, 0.12f);
