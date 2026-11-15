@@ -14,8 +14,8 @@ namespace LunaCero
         [SerializeField] private float gravity = 3.2f;
         [SerializeField] private float jumpHeight = 0.85f;
         [Header("Propulsor (mantener Espacio en el aire)")]
-        [SerializeField] private float jetpackThrust = 3.4f;
-        [SerializeField] private float jetpackMaxRise = 3.5f;
+        [SerializeField] private float jetpackThrust = 2f;
+        [SerializeField] private float jetpackMaxRise = 2.5f;
         [SerializeField] private float jetpackStaminaPerSecond = 28f;
         [SerializeField] private float jetpackDelay = 0.05f;
         [Header("Camara")]
@@ -31,10 +31,20 @@ namespace LunaCero
         [SerializeField] private LayerMask groundLayers = ~0;
         [SerializeField] private float groundProbeDistance = 0.12f;
         [SerializeField] private float maxSlope = 50f;
+        [Tooltip("Altura maxima de un escalon que puede subir caminando")]
+        [SerializeField] private float stepHeight = 0.35f;
+        [SerializeField] private float stepReach = 0.12f;
         [SerializeField] private float respawnBelow = -15f;
+        [Header("Respawn seguro")]
+        [SerializeField] private float respawnSearchRadius = 5f;
+        [SerializeField] private float fallDamage = 20f;
 
         private readonly RaycastHit[] groundHits = new RaycastHit[16];
+        private readonly Collider[] respawnHits = new Collider[32];
         private Rigidbody body;
+        private Collider[] movementColliders;
+        private Vector3 groundNormal = Vector3.up;
+        private float ignoreGroundUntil;
         private Vector2 movement;
         private bool sprint;
         private float jumpRequestedUntil = -1f;
@@ -53,10 +63,12 @@ namespace LunaCero
         private LunarPlayerStatus status;
         private LunarVitals vitals;
         private LunarPlayerRole role;
+        private float nextFallRecovery;
 
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
+            movementColliders = GetComponentsInChildren<Collider>();
             health = GetComponent<LunarHealth>();
             status = GetComponent<LunarPlayerStatus>();
             vitals = GetComponent<LunarVitals>();
@@ -125,7 +137,16 @@ namespace LunaCero
 
         private void FixedUpdate()
         {
-            IsGrounded = ProbeGround() && body.velocity.y <= 0.1f;
+            if (LunarSession.InMultiplayer && LunarPlayerRole.MenuOpen)
+            {
+                body.velocity = Vector3.zero;
+                movement = Vector2.zero;
+                jumpHeld = false;
+                Thrusting = false;
+                return;
+            }
+            bool supported = ProbeGround();
+            IsGrounded = supported && Time.time >= ignoreGroundUntil && Vector3.Dot(body.velocity, groundNormal) <= 0.5f;
             Quaternion heading = Quaternion.Euler(0f, yaw, 0f);
             body.MoveRotation(heading);
             if (role == null) TryGetComponent(out role);
@@ -133,13 +154,20 @@ namespace LunaCero
             Vector3 desired = heading * new Vector3(movement.x, 0f, movement.y) * (sprint ? sprintSpeed : walkSpeed) * roleSpeed;
             if (status != null && status.GetForcedMovement(out Vector3 forced)) desired = forced;
             Vector3 horizontal = new Vector3(body.velocity.x, 0f, body.velocity.z);
+            if (IsGrounded)
+            {
+                desired = Vector3.ProjectOnPlane(desired, groundNormal).normalized * desired.magnitude;
+                horizontal = Vector3.ProjectOnPlane(body.velocity, groundNormal);
+            }
             horizontal = Vector3.MoveTowards(horizontal, desired, (IsGrounded ? acceleration : airAcceleration) * Time.fixedDeltaTime);
-            float vertical = body.velocity.y;
+            float vertical = IsGrounded ? horizontal.y : body.velocity.y;
+            if (IsGrounded && jumpRequestedUntil < Time.time) TryStep(desired);
             if (IsGrounded && jumpRequestedUntil >= Time.time)
             {
                 vertical = Mathf.Sqrt(2f * gravity * jumpHeight);
                 jumpRequestedUntil = -1f;
                 IsGrounded = false;
+                ignoreGroundUntil = Time.time + 0.2f;
             }
             if (IsGrounded) airborneSince = Time.time;
             Thrusting = !IsGrounded && jumpHeld && Time.time - airborneSince > jetpackDelay && vertical < jetpackMaxRise &&
@@ -151,12 +179,9 @@ namespace LunaCero
                 horizontal = Vector3.MoveTowards(horizontal, desired, acceleration * 0.5f * Time.fixedDeltaTime);
             }
             body.velocity = new Vector3(horizontal.x, vertical, horizontal.z);
-            body.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
-            if (body.position.y < respawnBelow)
-            {
-                if (health != null) health.Damage(health.Maximum);
-                else Respawn();
-            }
+            // Sobre una rampa la presion va hacia el suelo, sin empujar cuesta abajo.
+            body.AddForce((IsGrounded ? -groundNormal : Vector3.down) * gravity, ForceMode.Acceleration);
+            if (body.position.y < respawnBelow && Time.time >= nextFallRecovery) RecoverFromFall();
         }
 
         private bool ProbeGround()
@@ -165,9 +190,62 @@ namespace LunaCero
             int count = Physics.SphereCastNonAlloc(body.position + Vector3.up * 0.28f, 0.18f,
                 Vector3.down, groundHits, 0.1f + groundProbeDistance, groundLayers, QueryTriggerInteraction.Ignore);
             float minNormalY = Mathf.Cos(maxSlope * Mathf.Deg2Rad);
+            float nearest = float.MaxValue;
+            groundNormal = Vector3.up;
             for (int i = 0; i < count; i++)
-                if (groundHits[i].rigidbody != body && groundHits[i].normal.y >= minNormalY) return true;
-            return false;
+            {
+                var hit = groundHits[i];
+                if (hit.rigidbody == body || hit.transform.IsChildOf(transform) || hit.distance <= 0f || hit.normal.y < minNormalY || hit.distance >= nearest) continue;
+                nearest = hit.distance;
+                groundNormal = hit.normal;
+            }
+            return nearest < float.MaxValue;
+        }
+
+        private void TryStep(Vector3 desired)
+        {
+            Vector3 direction = Vector3.ProjectOnPlane(desired, Vector3.up).normalized;
+            if (direction.sqrMagnitude < 0.01f || stepHeight <= 0f) return;
+            // Medir el ancho real del cuerpo: funciona con los cuatro colliders del astronauta.
+            float reach = stepReach + desired.magnitude * Time.fixedDeltaTime;
+            foreach (var collider in movementColliders)
+            {
+                if (collider == null || !collider.enabled || collider.isTrigger || collider.attachedRigidbody != body) continue;
+                Vector3 extent = collider.bounds.extents;
+                reach = Mathf.Max(reach, Mathf.Abs(direction.x) * extent.x + Mathf.Abs(direction.z) * extent.z + stepReach);
+            }
+            Vector3 feet = body.position;
+            bool blocked = false;
+            foreach (var hit in Physics.RaycastAll(feet + Vector3.up * 0.08f, direction, reach, groundLayers, QueryTriggerInteraction.Ignore))
+                if (hit.rigidbody != body && !hit.transform.IsChildOf(transform) && hit.normal.y < Mathf.Cos(maxSlope * Mathf.Deg2Rad)) blocked = true;
+            if (!blocked) return;
+
+            Vector3 ahead = feet + direction * reach;
+            RaycastHit landing = default;
+            float nearest = float.MaxValue;
+            foreach (var hit in Physics.RaycastAll(ahead + Vector3.up * (stepHeight + 0.05f), Vector3.down, stepHeight + 0.1f, groundLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody == body || hit.transform.IsChildOf(transform) || hit.distance >= nearest) continue;
+                landing = hit;
+                nearest = hit.distance;
+            }
+            if (nearest == float.MaxValue || landing.normal.y < Mathf.Cos(maxSlope * Mathf.Deg2Rad)) return;
+            if (landing.rigidbody != null && !landing.rigidbody.isKinematic) return;
+            float rise = landing.point.y - feet.y;
+            if (rise < 0.04f || rise > stepHeight) return;
+            Vector3 lift = Vector3.up * (rise + 0.025f);
+            // Comprobar todo el volumen y el recorrido ascendente, tambien bajo techos.
+            foreach (var hit in body.SweepTestAll(Vector3.up, lift.y, QueryTriggerInteraction.Ignore))
+                if (hit.collider != null && !hit.transform.IsChildOf(transform)) return;
+            foreach (var collider in movementColliders)
+            {
+                if (collider == null || !collider.enabled || collider.isTrigger || collider.attachedRigidbody != body) continue;
+                Bounds bounds = collider.bounds;
+                Vector3 extents = Vector3.Max(bounds.extents - Vector3.one * 0.015f, Vector3.one * 0.01f);
+                foreach (var obstacle in Physics.OverlapBox(bounds.center + lift + direction * stepReach, extents, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore))
+                    if (obstacle.attachedRigidbody != body && !obstacle.transform.IsChildOf(transform)) return;
+            }
+            body.position += lift;
         }
 
         /// <summary>Multijugador: cada jugador aparece en un sitio distinto junto a la base.</summary>
@@ -179,13 +257,83 @@ namespace LunaCero
 
         public void Respawn()
         {
+            Vector3 safePosition = FindSafeRespawn(spawnPosition);
             body.velocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
-            body.position = spawnPosition;
+            body.position = safePosition;
             body.rotation = spawnRotation;
             yaw = spawnRotation.eulerAngles.y;
             pitch = 0f;
             jumpRequestedUntil = -1f;
+            movement = Vector2.zero;
+            sprint = false;
+            jumpHeld = false;
+            jetpackArmed = false;
+            Thrusting = false;
+            status?.Release();
+            Physics.SyncTransforms();
+        }
+
+        private void RecoverFromFall()
+        {
+            nextFallRecovery = Time.time + 1f;
+            Respawn();
+            // Caer fuera del mapa penaliza, pero nunca encadena una muerte sin posibilidad de reaccionar.
+            if (health != null && !health.IsDead)
+            {
+                float damage = Mathf.Min(fallDamage, Mathf.Max(0f, health.Current - 1f));
+                if (damage > 0f) health.Damage(damage);
+            }
+        }
+
+        private Vector3 FindSafeRespawn(Vector3 wanted)
+        {
+            if (TryRespawnPoint(wanted, out Vector3 safe)) return safe;
+
+            const int directions = 12;
+            float step = 1f;
+            int rings = Mathf.Max(1, Mathf.CeilToInt(respawnSearchRadius / step));
+            for (int ring = 1; ring <= rings; ring++)
+            {
+                float radius = Mathf.Min(respawnSearchRadius, ring * step);
+                for (int i = 0; i < directions; i++)
+                {
+                    float angle = (i + ring * 0.5f) * Mathf.PI * 2f / directions;
+                    Vector3 candidate = wanted + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+                    if (TryRespawnPoint(candidate, out safe)) return safe;
+                }
+            }
+
+            // Ultimo recurso: aparece por encima del punto original para no quedar dentro del obstaculo.
+            return wanted + Vector3.up * 2f;
+        }
+
+        private bool TryRespawnPoint(Vector3 candidate, out Vector3 safe)
+        {
+            safe = candidate;
+            float bestDistance = float.MaxValue;
+            bool foundGround = false;
+            foreach (var hit in Physics.RaycastAll(candidate + Vector3.up * 5f, Vector3.down, 12f, groundLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody == body || hit.transform.IsChildOf(transform)) continue;
+                if (hit.normal.y < Mathf.Cos(maxSlope * Mathf.Deg2Rad) || hit.distance >= bestDistance) continue;
+                bestDistance = hit.distance;
+                safe = hit.point + Vector3.up * 0.05f;
+                foundGround = true;
+            }
+            if (!foundGround) return false;
+
+            // Volumen aproximado del astronauta completo, desde los pies hasta la cabeza.
+            Vector3 bottom = safe + Vector3.up * 0.37f;
+            Vector3 top = safe + Vector3.up * 1.5f;
+            int count = Physics.OverlapCapsuleNonAlloc(bottom, top, 0.32f, respawnHits, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                Collider obstacle = respawnHits[i];
+                if (obstacle == null || obstacle.attachedRigidbody == body || obstacle.transform.IsChildOf(transform)) continue;
+                return false;
+            }
+            return true;
         }
 
         private static void SetCursor(bool locked)

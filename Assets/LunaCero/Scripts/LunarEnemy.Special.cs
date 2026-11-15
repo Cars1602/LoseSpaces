@@ -155,17 +155,9 @@ namespace LunaCero
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / 0.75f);
                 Vector3 next = Vector3.Lerp(start, end, t) + Vector3.up * (Mathf.Sin(t * Mathf.PI) * 2.4f);
-                Vector3 step = next - transform.position;
-                bool blocked = false;
-                foreach (var hit in Physics.SphereCastAll(transform.position + Vector3.up * 0.7f, 0.35f, step.normalized, step.magnitude, ~0, QueryTriggerInteraction.Ignore))
-                {
-                    if (hit.collider.transform.IsChildOf(transform) || LunarCrew.IsCrew(hit.collider.GetComponentInParent<LunarHealth>())) continue;
-                    if (hit.normal.y > 0.6f) continue;
-                    blocked = true;
-                    break;
-                }
-                if (blocked) break;
-                transform.position = next;
+                // Usa el tamano real del monstruo: antes todos saltaban con una esfera fija
+                // de 0.35 m y los grandes podian atravesar rocas, cajas o paredes.
+                if (!TrySpecialMove(next, false)) break;
                 yield return null;
             }
             RestoreAgent();
@@ -189,7 +181,7 @@ namespace LunaCero
             while (Time.time < until && !health.IsDead && agent.enabled && agent.isOnNavMesh)
             {
                 Vector3 before = agent.nextPosition;
-                agent.Move(direction * 13f * Time.deltaTime);
+                if (!TrySpecialMove(agent.nextPosition + direction * 13f * Time.deltaTime, true)) break;
                 if (Vector3.Distance(transform.position, target.transform.position) < 1.8f)
                 {
                     target.Damage(12);
@@ -238,6 +230,7 @@ namespace LunaCero
                 transform.position = point.position;
                 agent.enabled = true;
                 agent.Warp(point.position);
+                SetSafePosition(point.position);
             }
         }
 

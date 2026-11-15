@@ -16,10 +16,15 @@ namespace LunaCero
         public int burstCount = 1;
         private NavMeshAgent agent;
         private LunarHealth health;
+        private CapsuleCollider bodyCollider;
+        private Rigidbody bodyRigidbody;
         private LunarHealth target;
         private float nextAttack;
         private float nextPath;
         private bool alerted;
+        private Vector3 lastSafePosition;
+        private bool hasSafePosition;
+        private const float CollisionSkin = 0.04f;
         public bool IsDead => health != null && health.IsDead;
 
         /// <summary>Alcance real: los monstruos grandes golpean desde mas lejos (su cuerpo es mas ancho).</summary>
@@ -33,13 +38,30 @@ namespace LunaCero
         {
             agent = GetComponent<NavMeshAgent>();
             health = GetComponent<LunarHealth>();
+            bodyCollider = GetComponent<CapsuleCollider>();
+            bodyRigidbody = GetComponent<Rigidbody>();
             health.Died += Die;
             Reach = attackRange;
-            if (TryGetComponent(out CapsuleCollider body))
+            if (bodyCollider != null)
             {
                 float scale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
-                Reach = attackRange + Mathf.Max(0f, body.radius * scale - 0.4f);
-                BodyHeight = body.height * transform.lossyScale.y;
+                Reach = attackRange + Mathf.Max(0f, bodyCollider.radius * scale - 0.4f);
+                BodyHeight = bodyCollider.height * transform.lossyScale.y;
+                bodyCollider.isTrigger = false;
+
+                // El agente y el cuerpo fisico deben tener el mismo volumen. Si el agente es
+                // mas pequeno, puede calcular rutas pegadas a una pared y meter el modelo dentro.
+                agent.radius = Mathf.Max(agent.radius, bodyCollider.radius);
+                agent.height = Mathf.Max(agent.height, bodyCollider.height);
+            }
+            agent.autoRepath = true;
+            agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+            if (bodyRigidbody != null)
+            {
+                bodyRigidbody.isKinematic = true;
+                bodyRigidbody.useGravity = false;
+                bodyRigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+                bodyRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
             }
         }
 
@@ -70,16 +92,16 @@ namespace LunaCero
         /// <summary>El tripulante vivo mas cercano (cualquier jugador). No cambia mientras ataca.</summary>
         private void Retarget()
         {
-            if (Time.time < nextRetarget && target != null && !target.IsDead) return;
+            if (Time.time < nextRetarget && target != null && !target.IsDead && !target.IsInvulnerable) return;
             nextRetarget = Time.time + 0.6f;
             if (busy) return;
             var nearest = LunarCrew.Nearest(transform.position);
             if (nearest == null)
             {
                 var player = FindObjectOfType<LunarPlayerCombat>();
-                if (player != null) nearest = player.GetComponent<LunarHealth>();
+                if (player != null && !player.GetComponent<LunarHealth>().IsInvulnerable) nearest = player.GetComponent<LunarHealth>();
             }
-            if (nearest != null) target = nearest;
+            target = nearest;
         }
 
         private void Start()
@@ -92,14 +114,95 @@ namespace LunaCero
                 transform.position = hit.position;
                 agent.enabled = true;
                 agent.Warp(hit.position);
+                SetSafePosition(hit.position);
             }
             else Debug.LogError("No hay suelo navegable para " + displayName, this);
         }
 
+        private void LateUpdate()
+        {
+            if (health == null || health.IsDead || bodyCollider == null || !bodyCollider.enabled) return;
+            if (!hasSafePosition) { SetSafePosition(transform.position); return; }
+
+            Vector3 movement = transform.position - lastSafePosition;
+            if (movement.sqrMagnitude < 0.000001f) return;
+            if (TrySweepBody(lastSafePosition, movement, out float allowedDistance))
+            {
+                Vector3 corrected = lastSafePosition + movement.normalized * allowedDistance;
+                if (agent.enabled && agent.isOnNavMesh) agent.Warp(corrected);
+                else transform.position = corrected;
+            }
+            SetSafePosition(transform.position);
+        }
+
+        /// <summary>
+        /// Mueve una habilidad sin atravesar paredes. Devuelve false cuando el cuerpo choca.
+        /// </summary>
+        private bool TrySpecialMove(Vector3 destination, bool throughAgent)
+        {
+            Vector3 movement = destination - transform.position;
+            if (movement.sqrMagnitude < 0.000001f) return true;
+            if (TrySweepBody(transform.position, movement, out float allowedDistance))
+            {
+                Vector3 corrected = transform.position + movement.normalized * allowedDistance;
+                if (throughAgent && agent.enabled && agent.isOnNavMesh) agent.Move(corrected - transform.position);
+                else transform.position = corrected;
+                if (!throughAgent) SetSafePosition(transform.position);
+                return false;
+            }
+
+            if (throughAgent && agent.enabled && agent.isOnNavMesh) agent.Move(movement);
+            else transform.position = destination;
+            if (!throughAgent) SetSafePosition(transform.position);
+            return true;
+        }
+
+        private bool TrySweepBody(Vector3 origin, Vector3 movement, out float allowedDistance)
+        {
+            float distance = movement.magnitude;
+            allowedDistance = distance;
+            if (distance <= 0.0001f || bodyCollider == null || !bodyCollider.enabled) return false;
+
+            GetCapsuleAt(origin, out Vector3 bottom, out Vector3 top, out float radius);
+            RaycastHit[] hits = Physics.CapsuleCastAll(bottom, top, radius, movement / distance,
+                distance + CollisionSkin, ~0, QueryTriggerInteraction.Ignore);
+            float nearest = float.MaxValue;
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider == null || hit.collider.transform.IsChildOf(transform)) continue;
+                // El suelo y las pendientes transitables no son paredes laterales al avanzar
+                // o despegar. Al descender si se conservan para que el salto aterrice encima.
+                if (hit.normal.y > 0.62f && movement.y >= -0.01f) continue;
+                if (hit.distance < nearest) nearest = hit.distance;
+            }
+
+            if (nearest == float.MaxValue) return false;
+            allowedDistance = Mathf.Max(0f, Mathf.Min(distance, nearest - CollisionSkin));
+            return true;
+        }
+
+        private void GetCapsuleAt(Vector3 position, out Vector3 bottom, out Vector3 top, out float radius)
+        {
+            Vector3 scale = transform.lossyScale;
+            radius = bodyCollider.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            float height = Mathf.Max(radius * 2f, bodyCollider.height * Mathf.Abs(scale.y));
+            Vector3 center = position + transform.rotation * Vector3.Scale(bodyCollider.center, scale);
+            Vector3 axis = transform.up * Mathf.Max(0f, height * 0.5f - radius);
+            bottom = center - axis;
+            top = center + axis;
+        }
+
+        private void SetSafePosition(Vector3 position)
+        {
+            lastSafePosition = position;
+            hasSafePosition = true;
+        }
+
         private void Update()
         {
+            if (LunarSession.WaitingForMatch) { Stop(); return; }
             if (!health.IsDead) Retarget();
-            if (health.IsDead || target == null || target.IsDead || !agent.enabled || !agent.isOnNavMesh) { Stop(); return; }
+            if (health.IsDead || target == null || target.IsDead || target.IsInvulnerable || !agent.enabled || !agent.isOnNavMesh) { Stop(); return; }
             float distance = Vector3.Distance(transform.position, target.transform.position);
             if (SpecialUpdate(distance)) return;
             if (relentless || distance <= detectionRange || health.Current < health.Maximum) alerted = true;

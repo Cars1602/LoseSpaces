@@ -1,13 +1,13 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1102 &-912564231809291027
+--- !u!1102 &-106514923052397114
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Muerte
+  m_Name: Acechar
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -20,7 +20,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 4621032695417671721, guid: fd9113a693afb3745b6109a440add827, type: 3}
+  m_Motion: {fileID: 868654973677676517, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -58,10 +58,10 @@ AnimatorStateMachine:
   m_Name: Base Layer
   m_ChildStates:
   - serializedVersion: 1
-    m_State: {fileID: 5780796325743115092}
+    m_State: {fileID: -106514923052397114}
     m_Position: {x: 200, y: 0, z: 0}
   - serializedVersion: 1
-    m_State: {fileID: -912564231809291027}
+    m_State: {fileID: 7932355550375487645}
     m_Position: {x: 235, y: 65, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
@@ -72,15 +72,15 @@ AnimatorStateMachine:
   m_EntryPosition: {x: 50, y: 120, z: 0}
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: 5780796325743115092}
---- !u!1102 &5780796325743115092
+  m_DefaultState: {fileID: -106514923052397114}
+--- !u!1102 &7932355550375487645
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Acechar
+  m_Name: Muerte
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -93,7 +93,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 868654973677676517, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
+  m_Motion: {fileID: 4621032695417671721, guid: fd9113a693afb3745b6109a440add827, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

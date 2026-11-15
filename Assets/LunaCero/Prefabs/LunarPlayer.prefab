@@ -349,8 +349,8 @@ MonoBehaviour:
   airAcceleration: 3
   gravity: 3.2
   jumpHeight: 0.85
-  jetpackThrust: 3.4
-  jetpackMaxRise: 3.5
+  jetpackThrust: 2
+  jetpackMaxRise: 2.5
   jetpackStaminaPerSecond: 28
   jetpackDelay: 0.25
   view: {fileID: 3244269322798564415}
@@ -366,6 +366,8 @@ MonoBehaviour:
   groundProbeDistance: 0.12
   maxSlope: 50
   respawnBelow: -15
+  respawnSearchRadius: 5
+  fallDamage: 20
 --- !u!114 &5027825564503894881
 MonoBehaviour:
   m_ObjectHideFlags: 0

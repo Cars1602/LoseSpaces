@@ -18,7 +18,7 @@ namespace LunaCero
     {
         // Mensajes del anfitrion
         private const byte MsgAccept = 1, MsgPlayers = 2, MsgEnemies = 3, MsgRemoved = 4, MsgGrant = 5, MsgDeny = 6,
-            MsgParts = 7, MsgHurt = 8, MsgEffect = 9, MsgHazard = 10, MsgProjectile = 11, MsgHud = 12, MsgKick = 13;
+            MsgParts = 7, MsgHurt = 8, MsgEffect = 9, MsgHazard = 10, MsgProjectile = 11, MsgHud = 12, MsgKick = 13, MsgLobby = 14;
         // Mensajes de los invitados
         private const byte MsgJoin = 20, MsgState = 21, MsgHit = 22, MsgStagger = 23, MsgUse = 24, MsgDrop = 25, MsgShot = 26;
         private const byte NoHolder = 255;
@@ -29,7 +29,8 @@ namespace LunaCero
             public ReliableChannel Channel = new ReliableChannel();
             public bool Joined;
             public LunarPuppet Puppet;
-            public byte Role;
+            public byte Role = 255;
+            public float ProtectedUntil;
             /// <summary>Ultimo estado recibido (se reenvia tal cual a los demas invitados).</summary>
             public byte[] LastState;
         }
@@ -73,6 +74,83 @@ namespace LunaCero
         private bool accepted;
         private float lastShot;
         private Transform hiddenRoot;
+        private float nextLobby;
+        private readonly Dictionary<int, byte> lobbyRoles = new Dictionary<int, byte>();
+        private GUIStyle lobbyTitle, lobbyText;
+
+        private bool CanStartMatch => host && role != null && role.HasRole && Link.Peers.Count > 0 &&
+            Link.Peers.Keys.All(id => id == Link.MyId || (remotes.TryGetValue(id, out var remote) && remote.Joined && remote.Role < LunarRoleDefinition.All.Length));
+
+        private Packet LobbyPacket()
+        {
+            var packet = new Packet(MsgLobby).Bool(session.MatchStarted).Byte(Link.Peers.Count);
+            foreach (int id in Link.Peers.Keys.OrderBy(id => id))
+            {
+                byte selected = id == Link.MyId ? (role != null && role.HasRole ? (byte)role.Role : (byte)255)
+                    : remotes.TryGetValue(id, out var remote) && remote.Joined ? remote.Role : (byte)255;
+                packet.Byte(id).Byte(selected);
+            }
+            return packet;
+        }
+
+        private void StartMatch()
+        {
+            if (!CanStartMatch || session.MatchStarted) return;
+            session.ApplyMatchStarted(true);
+            SendAll(LobbyPacket(), true);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            player.Notify("Partida iniciada. Buena suerte, tripulacion!");
+        }
+
+        private void OnGUI()
+        {
+            if (session == null || Link == null || !LunarSession.WaitingForMatch || LunarPlayerRole.ChoosingRole) return;
+            if (lobbyTitle == null)
+            {
+                lobbyTitle = new GUIStyle(GUI.skin.label) { fontSize = 26, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+                lobbyTitle.normal.textColor = Color.white;
+                lobbyText = new GUIStyle(GUI.skin.label) { fontSize = 16, wordWrap = true, richText = false };
+                lobbyText.normal.textColor = Color.white;
+            }
+            float scale = Mathf.Max(0.5f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
+            Matrix4x4 previous = GUI.matrix;
+            Color previousColor = GUI.color;
+            bool previousEnabled = GUI.enabled;
+            GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
+            float width = Screen.width / scale, height = Screen.height / scale;
+            GUI.color = new Color(0.015f, 0.025f, 0.045f, 0.97f);
+            GUI.DrawTexture(new Rect(0, 0, width, height), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            GUILayout.BeginArea(new Rect(width / 2f - 300, Mathf.Max(20, height / 2f - 235), 600, 470));
+            GUILayout.Label("SALA DE ESPERA", lobbyTitle);
+            GUILayout.Label(session.RoomName, lobbyTitle);
+            GUILayout.Space(16);
+            GUILayout.Label("Todos deben elegir su rol antes de iniciar.", lobbyText);
+            GUILayout.Space(12);
+            foreach (var peer in Link.Peers.OrderBy(p => p.Key))
+            {
+                byte selected = 255;
+                if (peer.Key == Link.MyId && role != null && role.HasRole) selected = (byte)role.Role;
+                else if (host && remotes.TryGetValue(peer.Key, out var remote) && remote.Joined) selected = remote.Role;
+                else if (!host && lobbyRoles.TryGetValue(peer.Key, out byte value)) selected = value;
+                string readiness = selected < LunarRoleDefinition.All.Length ? LunarRoleDefinition.All[selected].title + " - LISTO" : "Eligiendo rol...";
+                GUILayout.Label($"{peer.Value}{(peer.Key == 0 ? " (anfitrion)" : "")}\n{readiness}", lobbyText, GUILayout.Height(58));
+            }
+            GUILayout.FlexibleSpace();
+            if (host)
+            {
+                GUI.enabled = CanStartMatch;
+                if (GUILayout.Button("INICIAR PARTIDA", GUILayout.Height(42))) StartMatch();
+                GUI.enabled = previousEnabled;
+            }
+            else GUILayout.Label(accepted ? "Esperando a que el anfitrion inicie la partida..." : "Sincronizando con el anfitrion...", lobbyText);
+            if (GUILayout.Button("Salir de la sala", GUILayout.Height(30))) session.Leave("Saliste de la sala.");
+            GUILayout.EndArea();
+            GUI.color = previousColor;
+            GUI.enabled = previousEnabled;
+            GUI.matrix = previous;
+        }
 
         private void Start()
         {
@@ -221,6 +299,8 @@ namespace LunaCero
         // ------------------------------------------------------------ anfitrion
         private void HostReceive(Remote remote, Packet packet)
         {
+            if ((packet.Type == MsgHit || packet.Type == MsgStagger || packet.Type == MsgShot || packet.Type == MsgUse || packet.Type == MsgEffect) &&
+                (!session.MatchStarted || !remote.Joined || remote.Role >= LunarRoleDefinition.All.Length)) return;
             switch (packet.Type)
             {
                 case MsgJoin:
@@ -234,14 +314,22 @@ namespace LunaCero
                     bool first = !remote.Joined;
                     remote.Joined = true;
                     if (remote.Puppet == null) remote.Puppet = CreatePuppet(remote.Id, host: true);
+                    remote.Puppet.Health.NetworkProtected = true;
                     if (!first) return;
                     var accept = new Packet(MsgAccept).UShort(removed.Count);
                     foreach (ushort id in removed) accept.UShort(id);
                     SendTo(remote.Id, accept, true);
+                    SendTo(remote.Id, LobbyPacket(), true);
                     break;
                 }
                 case MsgState when remote.Joined && remote.Puppet != null:
-                    ReadState(packet, remote.Puppet, out remote.Role);
+                    ReadState(packet, remote.Puppet, out byte selectedRole);
+                    if (remote.Role == 255 && selectedRole < LunarRoleDefinition.All.Length)
+                    {
+                        remote.Role = selectedRole;
+                        remote.ProtectedUntil = Time.unscaledTime + 3f;
+                    }
+                    remote.Puppet.Health.NetworkProtected = !session.MatchStarted || remote.Role == 255 || Time.unscaledTime < remote.ProtectedUntil;
                     break;
                 case MsgHit:
                 {
@@ -320,6 +408,11 @@ namespace LunaCero
         private void HostBroadcast()
         {
             float now = Time.unscaledTime;
+            if (now >= nextLobby)
+            {
+                nextLobby = now + 0.5f;
+                SendAll(LobbyPacket(), false);
+            }
             if (remotes.Count == 0) return;
             if (now >= nextPlayers)
             {
@@ -405,6 +498,21 @@ namespace LunaCero
         {
             switch (packet.Type)
             {
+                case MsgLobby:
+                {
+                    bool wasStarted = session.MatchStarted;
+                    session.ApplyMatchStarted(packet.ReadBool());
+                    lobbyRoles.Clear();
+                    int count = packet.ReadByte();
+                    for (int i = 0; i < count; i++) lobbyRoles[packet.ReadByte()] = packet.ReadByte();
+                    if (!wasStarted && session.MatchStarted && role != null && role.HasRole)
+                    {
+                        Cursor.lockState = CursorLockMode.Locked;
+                        Cursor.visible = false;
+                        player.Notify("Partida iniciada. Buena suerte, tripulacion!");
+                    }
+                    break;
+                }
                 case MsgAccept:
                 {
                     accepted = true;
@@ -568,7 +676,13 @@ namespace LunaCero
             foreach (var behaviour in copy.GetComponentsInChildren<MonoBehaviour>(true))
                 if (!(behaviour is LunarHealth)) DestroyImmediate(behaviour);
             foreach (var listener in copy.GetComponentsInChildren<AudioListener>(true)) DestroyImmediate(listener);
-            foreach (var renderer in copy.GetComponentsInChildren<Renderer>(true)) renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            foreach (var renderer in copy.GetComponentsInChildren<Renderer>(true))
+            {
+                // La copia puede crearse mientras el jugador local esta en primera persona y su
+                // cuerpo esta oculto. El astronauta remoto siempre debe volver a ser visible.
+                renderer.enabled = true;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            }
             if (copy.TryGetComponent(out Rigidbody rigid)) { rigid.isKinematic = true; rigid.interpolation = RigidbodyInterpolation.None; }
             var puppet = copy.AddComponent<LunarPuppet>();
             puppet.Id = id;

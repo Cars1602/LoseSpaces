@@ -57,7 +57,7 @@ namespace LunaCero
 
         public bool Capture(LunarEnemy source, LunarControlEffect effect, float seconds, Vector3 direction)
         {
-            if (source == null || source.IsDead || GetComponent<LunarHealth>().IsDead || IsControlled || Time.time < immunityUntil) return false;
+            if (source == null || source.IsDead || GetComponent<LunarHealth>().IsDead || GetComponent<LunarHealth>().IsInvulnerable || IsControlled || Time.time < immunityUntil) return false;
             Captor = source;
             Control = effect;
             releaseAt = Time.time + seconds;

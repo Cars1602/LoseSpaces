@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1379777387170668760
+--- !u!1 &2416044278032619315
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,7 +8,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 643994024361035104}
+  - component: {fileID: 2047980191741839999}
   m_Layer: 0
   m_Name: Modelo Asechador
   m_TagString: Untagged
@@ -16,20 +16,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &643994024361035104
+--- !u!4 &2047980191741839999
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1379777387170668760}
+  m_GameObject: {fileID: 2416044278032619315}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.4563125, y: 1.4563125, z: 1.4563125}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 302776363640374831}
+  - {fileID: 9153816768880857383}
   m_Father: {fileID: 2551710141706397413}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3920403522537919659
@@ -189,7 +189,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eee5e9ccd289b942b68fa510861f8fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 1133564696043135066}
+  animator: {fileID: 2796403578102583192}
   moveState: Correr
   attackState: Atacar
   attackDuration: 1.5
@@ -227,16 +227,16 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 643994024361035104}
+  - {fileID: 2047980191741839999}
   m_Father: {fileID: 4726166198512601847}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &268267655378903492
+--- !u!1001 &8683602706148177612
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 643994024361035104}
+    m_TransformParent: {fileID: 2047980191741839999}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -292,26 +292,21 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1133564696043135066}
+      addedObject: {fileID: 2796403578102583192}
   m_SourcePrefab: {fileID: 100100000, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
---- !u!4 &302776363640374831 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
-  m_PrefabInstance: {fileID: 268267655378903492}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1114779253965790357 stripped
+--- !u!1 &8377596316600503197 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
-  m_PrefabInstance: {fileID: 268267655378903492}
+  m_PrefabInstance: {fileID: 8683602706148177612}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &1133564696043135066
+--- !u!95 &2796403578102583192
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1114779253965790357}
+  m_GameObject: {fileID: 8377596316600503197}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 8040a9199938cda4d9aa7da738683f6a, type: 2}
@@ -325,3 +320,8 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!4 &9153816768880857383 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4323e32f8a580ca4e8e8c85dfa757ecb, type: 3}
+  m_PrefabInstance: {fileID: 8683602706148177612}
+  m_PrefabAsset: {fileID: 0}

@@ -46,7 +46,7 @@ namespace LunaCero
 
         private void Update()
         {
-            if (health.IsDead) return;
+            if (health.IsDead || (LunarSession.InMultiplayer && LunarPlayerRole.MenuOpen)) return;
             float dt = Time.deltaTime;
             bool sprinting = controller != null && controller.IsSprinting;
 
@@ -84,22 +84,33 @@ namespace LunaCero
         [SerializeField] private float maxFuel = 100f;
         [SerializeField] private float fuelRegen = 22f;
         [SerializeField] private float fuelRegenDelay = 0.6f;
+        [Tooltip("Espera antes de recargar cuando el combustible llega a cero")]
+        [SerializeField] private float emptyFuelCooldown = 10f;
         private float fuelRegenAt;
+        private float fuelCooldownUntil;
         public float Fuel { get; private set; } = 100f;
         public float MaxFuel => maxFuel * Role.fuel;
+        public float FuelCooldownRemaining => Mathf.Max(0f, fuelCooldownUntil - Time.time);
+        public bool FuelCoolingDown => FuelCooldownRemaining > 0f;
 
         public bool TryUseFuel(float amount)
         {
-            if (Fuel <= 0f) return false;
+            if (FuelCoolingDown || Fuel <= 0f || amount <= 0f) return false;
             Fuel = Mathf.Max(0f, Fuel - amount);
             fuelRegenAt = Time.time + fuelRegenDelay;
+            if (Fuel <= 0f)
+            {
+                fuelCooldownUntil = Time.time + emptyFuelCooldown;
+                fuelRegenAt = Mathf.Max(fuelRegenAt, fuelCooldownUntil);
+            }
             return true;
         }
 
         private void LateUpdate()
         {
+            if (health.IsDead || (LunarSession.InMultiplayer && LunarPlayerRole.MenuOpen)) return;
             // El combustible se recarga al tocar el suelo.
-            if (controller != null && controller.IsGrounded && Time.time >= fuelRegenAt)
+            if (controller != null && controller.IsGrounded && !FuelCoolingDown && Time.time >= fuelRegenAt)
                 Fuel = Mathf.Min(MaxFuel, Fuel + fuelRegen * Role.fuelRegen * Time.deltaTime);
             // Al elegir el rol cambia la capacidad: se empieza con todo lleno.
             if (!roleFilled && TryGetComponent(out LunarPlayerRole role) && role.HasRole)
@@ -107,6 +118,8 @@ namespace LunaCero
                 roleFilled = true;
                 Stamina = MaxStamina;
                 Fuel = MaxFuel;
+                fuelCooldownUntil = 0f;
+                fuelRegenAt = 0f;
             }
         }
         private bool roleFilled;
@@ -129,6 +142,8 @@ namespace LunaCero
             Oxygen = maxOxygen;
             Stamina = MaxStamina;
             Fuel = MaxFuel;
+            fuelCooldownUntil = 0f;
+            fuelRegenAt = 0f;
             Exhausted = false;
         }
     }

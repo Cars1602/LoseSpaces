@@ -66,7 +66,10 @@ namespace LunaCero.Editor
                 var renderers = model.GetComponentsInChildren<Renderer>();
                 if (renderers.Length == 0) throw new Exception("Sin malla: " + name);
                 var bounds = Bounds(root.transform,renderers);
-                if (bounds.size.x > bounds.size.z) model.transform.localRotation = Quaternion.Euler(0,90,0);
+                // Estos FBX usan +X como largo del arma y +Z como parte superior.
+                // En el juego el canon debe apuntar a +Z y la parte superior quedar en +Y.
+                if (bounds.size.x > bounds.size.z)
+                    model.transform.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.right);
                 bounds = Bounds(root.transform,renderers);
                 model.transform.localScale *= length / Mathf.Max(0.001f,bounds.size.z);
                 bounds = Bounds(root.transform,renderers);

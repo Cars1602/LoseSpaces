@@ -61,7 +61,7 @@ namespace LunaCero
         public int Medkits { get; private set; } = 3;
         public bool Reloading { get; private set; }
         public bool Aiming { get; private set; }
-        public bool CanAct => health != null && !health.IsDead && (status == null || !status.BlocksActions);
+        public bool CanAct => health != null && !health.IsDead && !LunarPlayerRole.MenuOpen && (status == null || !status.BlocksActions);
         public LunarPickup HeldObject => held;
         public Camera AimCamera => aimCamera;
 
@@ -191,6 +191,7 @@ namespace LunaCero
         public bool Equip(int index, bool announce = true)
         {
             if (index < 0 || index >= weapons.Count) return false;
+            Drop(false);
             if (reloadRoutine != null) { StopCoroutine(reloadRoutine); reloadRoutine = null; }
             Reloading = false;
             currentIndex = index;
@@ -223,10 +224,11 @@ namespace LunaCero
         private void HandleWeaponInput()
         {
             for (int i = 0; i < weapons.Count && i < 9; i++)
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i) && i != currentIndex) Equip(i);
+                if (Input.GetKeyDown(KeyCode.Alpha1 + i) && (i != currentIndex || held != null)) Equip(i);
             float wheel = Input.mouseScrollDelta.y;
-            if (Mathf.Abs(wheel) > 0.01f && weapons.Count > 1)
+            if (Mathf.Abs(wheel) > 0.01f && (weapons.Count > 1 || held != null))
                 Equip((currentIndex + (wheel < 0 ? 1 : -1) + weapons.Count) % weapons.Count);
+            if (held != null) { Aiming = false; return; }
             var data = CurrentWeapon.Data;
             Aiming = !data.IsMelee && data.zoomFov > 0 && Input.GetMouseButton(1);
             bool trigger = data.automatic ? Input.GetMouseButton(0) : Input.GetMouseButtonDown(0);
@@ -271,7 +273,7 @@ namespace LunaCero
         public bool TryFire(Ray aim)
         {
             var weapon = CurrentWeapon;
-            if (!CanAct || Reloading || Healing || weapon == null || Time.time < nextShot) return false;
+            if (!CanAct || held != null || Reloading || Healing || weapon == null || Time.time < nextShot) return false;
             if (weapon.Data.IsMelee) return TrySwing(weapon, aim);
             if (weapon.Ammo <= 0)
             {
@@ -554,6 +556,7 @@ namespace LunaCero
             if (Vector3.Distance(transform.position, pickup.transform.position) > interactionRange) return false;
             held = pickup;
             held.Hold(carrySocket);
+            Aiming = false;
             return true;
         }
 
@@ -665,7 +668,10 @@ namespace LunaCero
                 Bar(new Rect(px, py + 80, 324, 30), "ENERGIA", vitals.Exhausted ? "AGOTADO" : $"{st * 100f:0}%", st,
                     vitals.Exhausted ? new Color(0.5f, 0.5f, 0.5f) : new Color(1f, 0.82f, 0.2f));
                 float fuel = vitals.Fuel / vitals.MaxFuel;
-                Bar(new Rect(px, py + 120, 324, 30), "PROPULSOR", $"{fuel * 100f:0}%", fuel, new Color(0.7f, 0.45f, 1f));
+                string fuelText = vitals.FuelCoolingDown ? $"ESPERA {Mathf.CeilToInt(vitals.FuelCooldownRemaining)} s"
+                    : fuel < 1f && movement.IsGrounded ? $"RECARGANDO {fuel * 100f:0}%" : $"{fuel * 100f:0}%";
+                Bar(new Rect(px, py + 120, 324, 30), "PROPULSOR", fuelText, fuel,
+                    vitals.FuelCoolingDown ? new Color(0.5f, 0.5f, 0.5f) : new Color(0.7f, 0.45f, 1f));
             }
 
             // Municion y botiquines (abajo a la derecha)
@@ -720,8 +726,10 @@ namespace LunaCero
                 else if (vitals.Oxygen / vitals.MaxOxygen < 0.2f && blink) GUI.Label(new Rect(width / 2 - 250, 110, 500, 30), "OXIGENO BAJO - recarga en una estacion medica", centerStyle);
             }
             centerStyle.normal.textColor = Color.white;
+            if (LunarSession.InMultiplayer && role != null && role.ProtectionSeconds > 0f)
+                GUI.Label(new Rect(width / 2 - 250, height / 2 + 70, 500, 25), $"PROTECCION DE ENTRADA: {Mathf.CeilToInt(role.ProtectionSeconds)} s", centerStyle);
             if (Healing) GUI.Box(new Rect(width / 2 - 170, height / 2 + 50, 340, 55), $"SANANDO... {roleDef.stationHealTime:0.#} segundos\nNo salgas del anillo ni recibas dano.");
-            string prompt = held != null ? "E: soltar | G: lanzar " + held.displayName : nearby != null ? $"E: {nearby.verb} {nearby.displayName}" : "";
+            string prompt = held != null ? "E: soltar | G: lanzar | Arma: soltar " + held.displayName : nearby != null ? $"E: {nearby.verb} {nearby.displayName}" : "";
             if (prompt.Length > 0) GUI.Label(new Rect(width / 2 - 250, height - 90, 500, 25), prompt, centerStyle);
             if (Time.time < messageUntil) GUI.Label(new Rect(width / 2 - 250, height - 60, 500, 25), message, centerStyle);
             if (health.IsDead) GUI.Box(new Rect(width / 2 - 180, height / 2 - 50, 360, 100), LunarSession.InMultiplayer

@@ -16,6 +16,8 @@ namespace LunaCero
         /// esta vida (el monstruo real en el anfitrion, o el astronauta del otro jugador).
         /// </summary>
         public Action<float> Redirect;
+        public bool NetworkProtected;
+        public bool IsInvulnerable => NetworkProtected || (TryGetComponent(out LunarPlayerRole role) && role.SpawnProtected);
 
         private void Awake() { Current = maximum; }
 
@@ -23,7 +25,7 @@ namespace LunaCero
 
         public void Damage(float amount)
         {
-            if (IsDead || amount <= 0) return;
+            if (IsDead || amount <= 0 || IsInvulnerable) return;
             if (Redirect != null) { LastDamageTime = Time.time; Redirect(amount); return; }
             Current = Mathf.Max(0f, Current - amount);
             LastDamageTime = Time.time;

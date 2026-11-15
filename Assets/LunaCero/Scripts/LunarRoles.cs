@@ -90,8 +90,14 @@ namespace LunaCero
     {
         public static LunarRole? Chosen;
         private static bool menuOpen;
+        private bool ownsMenu;
         /// <summary>Hay una pantalla a pantalla completa (roles o menu de sala): sin controles del juego.</summary>
-        public static bool MenuOpen => menuOpen || LunarSession.Deciding;
+        public static bool MenuOpen => menuOpen || LunarSession.Deciding || LunarSession.WaitingForMatch;
+        public static bool ChoosingRole => menuOpen;
+        private float protectedUntil;
+        public float ProtectionSeconds => Mathf.Max(0f, protectedUntil - Time.unscaledTime);
+        public bool SpawnProtected => !LunarAutomation.Running && (LunarSession.Deciding ||
+            (LunarSession.InMultiplayer && (!HasRole || LunarSession.WaitingForMatch || Time.unscaledTime < protectedUntil)));
         [SerializeField] private LunarRole role = LunarRole.Militar;
         [Tooltip("Mostrar la eleccion de rol al empezar la partida")]
         public bool askOnStart = true;
@@ -124,13 +130,15 @@ namespace LunaCero
         private System.Collections.IEnumerator AskWhenReady()
         {
             while (LunarSession.Deciding) yield return null;
-            if (Chosen.HasValue) Choose(Chosen.Value);
+            if (LunarSession.InMultiplayer) OpenMenu();
+            else if (Chosen.HasValue) Choose(Chosen.Value);
             else if (askOnStart) OpenMenu();
             else Choose(role);
         }
 
         public void OpenMenu()
         {
+            ownsMenu = true;
             menuOpen = true;
             if (!LunarSession.InMultiplayer) Time.timeScale = 0f; // en red el mundo sigue para los demas
             Cursor.lockState = CursorLockMode.None;
@@ -139,15 +147,18 @@ namespace LunaCero
 
         public void Choose(LunarRole value)
         {
+            if (HasRole || !Enum.IsDefined(typeof(LunarRole), value)) return;
+            if (LunarSession.InMultiplayer) protectedUntil = Time.unscaledTime + 3f;
             role = value;
             Chosen = value;
             HasRole = true;
             if (menuOpen)
             {
+                ownsMenu = false;
                 menuOpen = false;
                 Time.timeScale = 1f;
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                Cursor.lockState = LunarSession.WaitingForMatch ? CursorLockMode.None : CursorLockMode.Locked;
+                Cursor.visible = LunarSession.WaitingForMatch;
             }
             Changed?.Invoke(Definition);
         }
@@ -168,7 +179,8 @@ namespace LunaCero
 
         private void OnDestroy()
         {
-            if (menuOpen) { menuOpen = false; Time.timeScale = 1f; }
+            // Las copias remotas se crean sin este componente: destruir su copia no cierra el menu local.
+            if (ownsMenu && menuOpen) { menuOpen = false; Time.timeScale = 1f; }
         }
 
         private void OnGUI()
@@ -181,7 +193,9 @@ namespace LunaCero
             float width = Screen.width / scale, height = Screen.height / scale;
             Fill(new Rect(0, 0, width, height), new Color(0.01f, 0.015f, 0.03f, 0.92f));
             GUI.Label(new Rect(0, 40, width, 40), "ELIGE TU ROL EN LA TRIPULACION", title);
-            GUI.Label(new Rect(0, 84, width, 24), "Cada rol cumple una funcion. Todos pueden buscar y recoger armas y objetos contundentes.", body);
+            GUI.Label(new Rect(0, 84, width, 24), LunarSession.InMultiplayer
+                ? "Estas protegido mientras eliges. Selecciona tu rol para estar listo."
+                : "Cada rol cumple una funcion. Todos pueden buscar y recoger armas y objetos contundentes.", body);
 
             var roles = LunarRoleDefinition.All;
             float cardWidth = Mathf.Min(228f, (width - 40f) / roles.Length - 12f);

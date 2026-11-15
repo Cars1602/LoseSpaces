@@ -32,7 +32,7 @@ namespace LunaCero
             float distance = float.MaxValue;
             foreach (var member in Members)
             {
-                if (member.IsDead) continue;
+                if (member.IsDead || member.IsInvulnerable) continue;
                 float d = (member.transform.position - position).sqrMagnitude;
                 if (d < distance) { distance = d; best = member; }
             }
@@ -49,7 +49,7 @@ namespace LunaCero
         public static LunarHealth RandomAlive()
         {
             Clean();
-            var alive = Members.FindAll(m => !m.IsDead);
+            var alive = Members.FindAll(m => !m.IsDead && !m.IsInvulnerable);
             return alive.Count > 0 ? alive[Random.Range(0, alive.Count)] : null;
         }
 

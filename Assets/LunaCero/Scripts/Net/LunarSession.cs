@@ -19,7 +19,7 @@ namespace LunaCero
     public sealed class LunarSession : MonoBehaviour
     {
         public enum Mode { Deciding, Solo, Host, Client }
-        public const string Build = "losesspaces-4";
+        public const string Build = "losesspaces-5";
         public const string ApiHost = "107.23.18.43";
         // Huella SHA-256 del certificado del servidor (autofirmado): solo se habla con ese servidor.
         public const string PinnedCertificate = "74B41A83383B162623A74A8E3662941A9ED903DAC935CBE0082ED1CD318E8B44";
@@ -30,6 +30,9 @@ namespace LunaCero
         public static bool InMultiplayer => Current == Mode.Host || Current == Mode.Client;
         public static bool IsHost => Current == Mode.Host;
         public static bool IsClient => Current == Mode.Client;
+        public bool MatchStarted { get; private set; }
+        public static bool WaitingForMatch => InMultiplayer && Instance != null && !Instance.MatchStarted;
+        public void ApplyMatchStarted(bool started) { if (started) MatchStarted = true; }
 
         private Mode mode = Mode.Deciding;
         private bool gameScene;
@@ -90,6 +93,8 @@ namespace LunaCero
 
         private void Begin(Mode value)
         {
+            MatchStarted = false;
+            LunarPlayerRole.Chosen = null;
             mode = value;
             finder?.Dispose();
             finder = null;
@@ -120,6 +125,7 @@ namespace LunaCero
 
         private void Shutdown()
         {
+            MatchStarted = false;
             Link?.Dispose(); Link = null;
             lanHub?.Dispose(); lanHub = null;
             finder?.Dispose(); finder = null;

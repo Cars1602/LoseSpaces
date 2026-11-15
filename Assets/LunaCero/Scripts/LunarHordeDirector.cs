@@ -76,6 +76,12 @@ namespace LunaCero
 
         private void Update()
         {
+            if (LunarSession.WaitingForMatch)
+            {
+                nextWave = Time.time + 18f;
+                nextPatrol = Time.time + 10f;
+                return;
+            }
             if (remote || player == null || !NavigationReady) return;
             if (!LunarCrew.AnyAlive && player.GetComponent<LunarHealth>().IsDead) return;
             enemies.RemoveAll(enemy => enemy == null);

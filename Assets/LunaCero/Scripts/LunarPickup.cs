@@ -27,6 +27,8 @@ namespace LunaCero
         private Collider[] colliders;
         private bool originalKinematic;
         private bool originalGravity;
+        private RigidbodyInterpolation originalInterpolation;
+        private Vector3 heldCenterOffset;
         private Transform originalParent;
         private bool[] colliderStates;
 
@@ -145,6 +147,7 @@ namespace LunaCero
 
         public void Hold(Transform socket)
         {
+            if (IsHeld || socket == null) return;
             IsHeld = true;
             originalParent = transform.parent;
             colliderStates = new bool[colliders.Length];
@@ -157,26 +160,43 @@ namespace LunaCero
             {
                 originalKinematic = body.isKinematic;
                 originalGravity = body.useGravity;
+                originalInterpolation = body.interpolation;
                 body.velocity = Vector3.zero;
                 body.angularVelocity = Vector3.zero;
+                body.interpolation = RigidbodyInterpolation.None;
                 body.isKinematic = true;
+                body.useGravity = false;
             }
             Quaternion relative = Quaternion.Inverse(socket.rotation) * transform.rotation;
-            transform.SetParent(socket, false);
+            // Conservar el tamano del mundo aunque la pieza o el jugador tengan escala.
+            transform.SetParent(socket, true);
             transform.localPosition = Vector3.zero;
             transform.localRotation = keepOrientation ? relative : Quaternion.identity;
+            // Las piezas importadas pueden tener el pivote muy lejos de su malla.
+            var renderers = GetComponentsInChildren<Renderer>();
+            heldCenterOffset = Vector3.zero;
+            if (renderers.Length > 0)
+            {
+                Bounds bounds = renderers[0].bounds;
+                foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+                heldCenterOffset = bounds.center - transform.position;
+                transform.position += socket.position - bounds.center;
+            }
         }
 
         public void Release(Vector3 position, Vector3 velocity)
         {
+            if (!IsHeld) return;
             transform.SetParent(originalParent, true);
-            transform.position = position;
+            // La posicion de suelta representa el centro visible, no el pivote importado.
+            transform.position = position - heldCenterOffset;
             IsHeld = false;
             for (int i = 0; i < colliders.Length; i++) colliders[i].enabled = colliderStates[i];
             if (body != null)
             {
-                body.isKinematic = originalKinematic;
+                body.isKinematic = ForceKinematic || originalKinematic;
                 body.useGravity = originalGravity;
+                body.interpolation = originalInterpolation;
                 if (!body.isKinematic) body.velocity = velocity;
             }
             LastReleaseVelocity = velocity;

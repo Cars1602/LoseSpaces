@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace LunaCero
 {
@@ -30,7 +31,20 @@ namespace LunaCero
         private float defaultNear;
         private Vector3 sway, swayVelocity;
         private float kick, bob;
-        private readonly Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode> hidden = new Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode>();
+        private struct RendererState
+        {
+            public bool enabled;
+            public ShadowCastingMode shadowCastingMode;
+
+            public RendererState(Renderer renderer)
+            {
+                enabled = renderer.enabled;
+                shadowCastingMode = renderer.shadowCastingMode;
+            }
+        }
+
+        private readonly Dictionary<Renderer, RendererState> hidden = new Dictionary<Renderer, RendererState>();
+        private float nextBodyScan;
 
         private void Start()
         {
@@ -157,32 +171,65 @@ namespace LunaCero
             SetBodyVisible(!firstPerson);
         }
 
-        // El cuerpo y el arma del cuerpo solo proyectan sombra en primera persona (no tapan la camara).
+        // El cuerpo real se apaga por completo en primera persona. Los brazos y el arma de la
+        // vista se mantienen porque pertenecen a "Vista primera persona". Tambien se elimina
+        // su sombra local para evitar la silueta grande y extrana delante de la camara.
         private void SetBodyVisible(bool visible)
         {
-            foreach (var pair in hidden) if (pair.Key != null) pair.Key.shadowCastingMode = pair.Value;
-            hidden.Clear();
-            if (visible) return;
+            if (visible)
+            {
+                foreach (var pair in hidden)
+                {
+                    if (pair.Key == null) continue;
+                    pair.Key.enabled = pair.Value.enabled;
+                    pair.Key.shadowCastingMode = pair.Value.shadowCastingMode;
+                }
+                hidden.Clear();
+                return;
+            }
             foreach (var renderer in GetComponentsInChildren<Renderer>(true))
             {
                 if (renderer.transform.IsChildOf(root) || renderer.GetComponentInParent<LunarPickup>() != null) continue;
                 if (viewCamera != null && renderer.transform.IsChildOf(viewCamera.transform)) continue;
-                hidden[renderer] = renderer.shadowCastingMode;
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+                if (!hidden.ContainsKey(renderer)) hidden[renderer] = new RendererState(renderer);
+
+                renderer.enabled = false;
             }
         }
+
+        private void OnEnable()
+        {
+            if (root != null && controller != null) Apply(controller.FirstPerson);
+        }
+
+        private void OnDisable()
+        {
+            if (root != null) root.gameObject.SetActive(false);
+            SetBodyVisible(true);
+            active = false;
+        }
+
+        private void OnDestroy() { SetBodyVisible(true); }
 
         private void LateUpdate()
         {
             if (controller == null || root == null) return;
             if (controller.FirstPerson != active) Apply(controller.FirstPerson);
             if (!active || combat == null) return;
+            // Algunos modelos se instalan despues de Start. Se detectan sin dejar que aparezcan
+            // dentro de la camara durante el resto de la partida.
+            if (Time.unscaledTime >= nextBodyScan)
+            {
+                nextBodyScan = Time.unscaledTime + 0.25f;
+                SetBodyVisible(false);
+            }
             var data = combat.CurrentWeapon != null ? combat.CurrentWeapon.Data : null;
             if (data != null && data != shownWeapon)
             {
                 RebuildWeapon(data);
                 SetBodyVisible(false); // el arma del cuerpo puede haber cambiado de modelo
             }
+            if (weaponRoot != null) weaponRoot.gameObject.SetActive(combat.HeldObject == null);
 
             float dt = Time.deltaTime;
             // Inercia con el raton

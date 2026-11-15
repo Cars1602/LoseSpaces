@@ -157,7 +157,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eee5e9ccd289b942b68fa510861f8fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 2007822336224105925}
+  animator: {fileID: 4002883475208000359}
   moveState: Correr
   attackState: Atacar
   attackDuration: 1.5
@@ -195,10 +195,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2493995708112584459}
+  - {fileID: 4705121358835611859}
   m_Father: {fileID: 9032680121231130736}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2470385659587141334
+--- !u!1 &9148913197643172396
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -206,7 +206,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2493995708112584459}
+  - component: {fileID: 4705121358835611859}
   m_Layer: 0
   m_Name: Modelo Escupidor
   m_TagString: Untagged
@@ -214,29 +214,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2493995708112584459
+--- !u!4 &4705121358835611859
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2470385659587141334}
+  m_GameObject: {fileID: 9148913197643172396}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.5276523, y: 1.5276523, z: 1.5276523}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 25729996437658012}
+  - {fileID: 1358464858668531010}
   m_Father: {fileID: 824775897866498763}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &563460362486185591
+--- !u!1001 &1535874713311812265
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2493995708112584459}
+    m_TransformParent: {fileID: 4705121358835611859}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: fe00f8b4ffa2c6947ba596d52130b1f2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -300,26 +300,26 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fe00f8b4ffa2c6947ba596d52130b1f2, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2007822336224105925}
+      addedObject: {fileID: 4002883475208000359}
   m_SourcePrefab: {fileID: 100100000, guid: fe00f8b4ffa2c6947ba596d52130b1f2, type: 3}
---- !u!4 &25729996437658012 stripped
+--- !u!4 &1358464858668531010 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: fe00f8b4ffa2c6947ba596d52130b1f2, type: 3}
-  m_PrefabInstance: {fileID: 563460362486185591}
+  m_PrefabInstance: {fileID: 1535874713311812265}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &797341536823886630 stripped
+--- !u!1 &1842513464853637112 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: fe00f8b4ffa2c6947ba596d52130b1f2, type: 3}
-  m_PrefabInstance: {fileID: 563460362486185591}
+  m_PrefabInstance: {fileID: 1535874713311812265}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &2007822336224105925
+--- !u!95 &4002883475208000359
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 797341536823886630}
+  m_GameObject: {fileID: 1842513464853637112}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: d72a983ffec8d734f86a2b0817a7ee4a, type: 2}
