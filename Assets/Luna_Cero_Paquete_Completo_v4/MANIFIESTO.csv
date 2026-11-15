@@ -1,0 +1,107 @@
+﻿archivo,categoria,accion,duracion_s,bucle,notas
+Monstruos/Acechador/Acechador_ataque_enojo.wav,Monstruo,Acechador_ataque_enojo,2.3,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Acechador/Acechador_base_ambiente.wav,Monstruo,Acechador_base_ambiente,4.5,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Acechador/Acechador_muerte.wav,Monstruo,Acechador_muerte,3.2,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Enjambre/Enjambre_ataque_enojo.wav,Monstruo,Enjambre_ataque_enojo,2.15,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Enjambre/Enjambre_base_ambiente.wav,Monstruo,Enjambre_base_ambiente,3.5,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Enjambre/Enjambre_muerte.wav,Monstruo,Enjambre_muerte,2.7,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Escupidor/Escupidor_ataque_enojo.wav,Monstruo,Escupidor_ataque_enojo,2.95,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Escupidor/Escupidor_base_ambiente.wav,Monstruo,Escupidor_base_ambiente,4.1,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Escupidor/Escupidor_muerte.wav,Monstruo,Escupidor_muerte,4.0,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Gigante/Gigante_ataque_enojo.wav,Monstruo,Gigante_ataque_enojo,5.4,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Gigante/Gigante_base_ambiente.wav,Monstruo,Gigante_base_ambiente,5.0,False,Master de monstruo v3 conservado sin cambios.
+Monstruos/Gigante/Gigante_muerte.wav,Monstruo,Gigante_muerte,5.9,False,Master de monstruo v3 conservado sin cambios.
+Armas/Pistola_Lunar/Disparo_01.wav,Arma,disparo,0.45,False,
+Armas/Pistola_Lunar/Disparo_02.wav,Arma,disparo,0.45,False,
+Armas/Pistola_Lunar/Disparo_03.wav,Arma,disparo,0.45,False,
+Armas/Pistola_Lunar/Disparo_Cargado.wav,Arma,disparo_cargado,0.7,False,
+Armas/Pistola_Lunar/Carga_Inicio.wav,Arma,carga_start,1.0,False,
+Armas/Pistola_Lunar/Carga_Sostenida_LOOP.wav,Arma,carga_loop,2.0,True,Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio.
+Armas/Pistola_Lunar/Carga_Lista.wav,Arma,carga_ready,0.36,False,
+Armas/Pistola_Lunar/Carga_Cancelar.wav,Arma,carga_cancel,0.48,False,
+Armas/Pistola_Lunar/Recarga_Extraer_Celda.wav,Arma,recarga_extraer_celda,0.5,False,
+Armas/Pistola_Lunar/Recarga_Insertar_Celda.wav,Arma,recarga_insertar_celda,0.55,False,
+Armas/Pistola_Lunar/Recarga_Activar_Energia.wav,Arma,recarga_activar_energia,0.62,False,
+Armas/Pistola_Lunar/Recarga_Completa.wav,Arma,recarga_completa,1.5,False,
+Armas/Pistola_Lunar/Equipar.wav,Arma,equipar,0.65,False,
+Armas/Pistola_Lunar/Guardar.wav,Arma,guardar,0.5,False,
+Armas/Pistola_Lunar/Sin_Energia.wav,Arma,sin_energia,0.36,False,
+Armas/Pistola_Lunar/Sobrecalentamiento.wav,Arma,sobrecalentamiento,0.85,False,
+Armas/Pistola_Lunar/Enfriamiento.wav,Arma,enfriamiento,1.0,False,
+Armas/Pistola_Lunar/Impacto_Energia.wav,Arma,impacto_energia,0.48,False,
+Armas/Pistola_Lunar/Recoger_Arma.wav,Arma,recoger_arma,0.85,False,
+Municiones/Municion_Pistola/Recoger_01.wav,Municion,recoger,0.8,False,
+Municiones/Municion_Pistola/Recoger_02.wav,Municion,recoger,0.8,False,
+Municiones/Municion_Pistola/Recoger_03.wav,Municion,recoger,0.8,False,
+Armas/Escopeta_de_Pulsos/Disparo_01.wav,Arma,disparo,0.85,False,
+Armas/Escopeta_de_Pulsos/Disparo_02.wav,Arma,disparo,0.85,False,
+Armas/Escopeta_de_Pulsos/Disparo_03.wav,Arma,disparo,0.85,False,
+Armas/Escopeta_de_Pulsos/Disparo_Cargado.wav,Arma,disparo_cargado,1.1,False,
+Armas/Escopeta_de_Pulsos/Carga_Inicio.wav,Arma,carga_start,1.5,False,
+Armas/Escopeta_de_Pulsos/Carga_Sostenida_LOOP.wav,Arma,carga_loop,2.0,True,Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio.
+Armas/Escopeta_de_Pulsos/Carga_Lista.wav,Arma,carga_ready,0.36,False,
+Armas/Escopeta_de_Pulsos/Carga_Cancelar.wav,Arma,carga_cancel,0.48,False,
+Armas/Escopeta_de_Pulsos/Recarga_Extraer_Celda.wav,Arma,recarga_extraer_celda,0.5,False,
+Armas/Escopeta_de_Pulsos/Recarga_Insertar_Celda.wav,Arma,recarga_insertar_celda,0.55,False,
+Armas/Escopeta_de_Pulsos/Recarga_Activar_Energia.wav,Arma,recarga_activar_energia,0.62,False,
+Armas/Escopeta_de_Pulsos/Recarga_Completa.wav,Arma,recarga_completa,2.1,False,
+Armas/Escopeta_de_Pulsos/Equipar.wav,Arma,equipar,0.65,False,
+Armas/Escopeta_de_Pulsos/Guardar.wav,Arma,guardar,0.5,False,
+Armas/Escopeta_de_Pulsos/Sin_Energia.wav,Arma,sin_energia,0.36,False,
+Armas/Escopeta_de_Pulsos/Sobrecalentamiento.wav,Arma,sobrecalentamiento,0.85,False,
+Armas/Escopeta_de_Pulsos/Enfriamiento.wav,Arma,enfriamiento,1.0,False,
+Armas/Escopeta_de_Pulsos/Impacto_Energia.wav,Arma,impacto_energia,0.48,False,
+Armas/Escopeta_de_Pulsos/Recoger_Arma.wav,Arma,recoger_arma,0.85,False,
+Municiones/Cartuchos_de_Pulso/Recoger_01.wav,Municion,recoger,0.8,False,
+Municiones/Cartuchos_de_Pulso/Recoger_02.wav,Municion,recoger,0.8,False,
+Municiones/Cartuchos_de_Pulso/Recoger_03.wav,Municion,recoger,0.8,False,
+Armas/Fusil_Lunar/Disparo_01.wav,Arma,disparo,0.245,False,
+Armas/Fusil_Lunar/Disparo_02.wav,Arma,disparo,0.245,False,
+Armas/Fusil_Lunar/Disparo_03.wav,Arma,disparo,0.245,False,
+Armas/Fusil_Lunar/Disparo_Cargado.wav,Arma,disparo_cargado,0.56,False,
+Armas/Fusil_Lunar/Carga_Inicio.wav,Arma,carga_start,0.85,False,
+Armas/Fusil_Lunar/Carga_Sostenida_LOOP.wav,Arma,carga_loop,2.0,True,Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio.
+Armas/Fusil_Lunar/Carga_Lista.wav,Arma,carga_ready,0.36,False,
+Armas/Fusil_Lunar/Carga_Cancelar.wav,Arma,carga_cancel,0.48,False,
+Armas/Fusil_Lunar/Recarga_Extraer_Celda.wav,Arma,recarga_extraer_celda,0.5,False,
+Armas/Fusil_Lunar/Recarga_Insertar_Celda.wav,Arma,recarga_insertar_celda,0.55,False,
+Armas/Fusil_Lunar/Recarga_Activar_Energia.wav,Arma,recarga_activar_energia,0.62,False,
+Armas/Fusil_Lunar/Recarga_Completa.wav,Arma,recarga_completa,1.8,False,
+Armas/Fusil_Lunar/Equipar.wav,Arma,equipar,0.65,False,
+Armas/Fusil_Lunar/Guardar.wav,Arma,guardar,0.5,False,
+Armas/Fusil_Lunar/Sin_Energia.wav,Arma,sin_energia,0.36,False,
+Armas/Fusil_Lunar/Sobrecalentamiento.wav,Arma,sobrecalentamiento,0.85,False,
+Armas/Fusil_Lunar/Enfriamiento.wav,Arma,enfriamiento,1.0,False,
+Armas/Fusil_Lunar/Impacto_Energia.wav,Arma,impacto_energia,0.48,False,
+Armas/Fusil_Lunar/Recoger_Arma.wav,Arma,recoger_arma,0.85,False,
+Armas/Fusil_Lunar/Rafaga_3_Disparos.wav,Arma,rafaga,0.55,False,Alternativa a disparar tres one-shots; no reproducir ambos a la vez.
+Municiones/Celdas_de_Rifle/Recoger_01.wav,Municion,recoger,0.8,False,
+Municiones/Celdas_de_Rifle/Recoger_02.wav,Municion,recoger,0.8,False,
+Municiones/Celdas_de_Rifle/Recoger_03.wav,Municion,recoger,0.8,False,
+Armas/Rifle_de_Precision/Disparo_01.wav,Arma,disparo,1.4,False,
+Armas/Rifle_de_Precision/Disparo_02.wav,Arma,disparo,1.4,False,
+Armas/Rifle_de_Precision/Disparo_03.wav,Arma,disparo,1.4,False,
+Armas/Rifle_de_Precision/Disparo_Cargado.wav,Arma,disparo_cargado,1.8,False,
+Armas/Rifle_de_Precision/Carga_Inicio.wav,Arma,carga_start,2.2,False,
+Armas/Rifle_de_Precision/Carga_Sostenida_LOOP.wav,Arma,carga_loop,2.0,True,Bucle de 2 s; hacer transicion de 30 ms desde Carga_Inicio.
+Armas/Rifle_de_Precision/Carga_Lista.wav,Arma,carga_ready,0.36,False,
+Armas/Rifle_de_Precision/Carga_Cancelar.wav,Arma,carga_cancel,0.48,False,
+Armas/Rifle_de_Precision/Recarga_Extraer_Celda.wav,Arma,recarga_extraer_celda,0.5,False,
+Armas/Rifle_de_Precision/Recarga_Insertar_Celda.wav,Arma,recarga_insertar_celda,0.55,False,
+Armas/Rifle_de_Precision/Recarga_Activar_Energia.wav,Arma,recarga_activar_energia,0.62,False,
+Armas/Rifle_de_Precision/Recarga_Completa.wav,Arma,recarga_completa,2.5,False,
+Armas/Rifle_de_Precision/Equipar.wav,Arma,equipar,0.65,False,
+Armas/Rifle_de_Precision/Guardar.wav,Arma,guardar,0.5,False,
+Armas/Rifle_de_Precision/Sin_Energia.wav,Arma,sin_energia,0.36,False,
+Armas/Rifle_de_Precision/Sobrecalentamiento.wav,Arma,sobrecalentamiento,0.85,False,
+Armas/Rifle_de_Precision/Enfriamiento.wav,Arma,enfriamiento,1.0,False,
+Armas/Rifle_de_Precision/Impacto_Energia.wav,Arma,impacto_energia,0.78,False,
+Armas/Rifle_de_Precision/Recoger_Arma.wav,Arma,recoger_arma,0.85,False,
+Armas/Rifle_de_Precision/Mira_Entrar.wav,Arma,mira,0.35,False,
+Armas/Rifle_de_Precision/Mira_Salir.wav,Arma,mira,0.35,False,
+Municiones/Capsula_de_Plasma/Recoger_01.wav,Municion,recoger,1.0,False,
+Municiones/Capsula_de_Plasma/Recoger_02.wav,Municion,recoger,1.0,False,
+Municiones/Capsula_de_Plasma/Recoger_03.wav,Municion,recoger,1.0,False,
+Municiones/Inventario_Lleno.wav,Municion,inventario_lleno,0.4,False,
+Lobby/Lobby_Luna_Cero_Musica_LOOP_96s.wav,Lobby,musica_ambiental,96,True,"Composicion original; 60 BPM, 24 compases, stereo. Repetir sin espacios ni fundidos automaticos. El archivo comienza en un punto del ciclo musical."
+Lobby/Base_Lunar_Ambiente_LOOP_48s.wav,Lobby,ambiente_habitat,48,True,"Ambiente interior original de base lunar ficticia, sin musica. Puede usarse solo o a bajo volumen bajo la musica."

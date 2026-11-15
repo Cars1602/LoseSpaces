@@ -21,8 +21,11 @@ namespace LunaCero
         {
             if (animator == null || dead) return;
             // Only two clips supplied: stalk while moving/attacking, hold its pose at rest.
-            if (ExternalSpeed >= 0f) { animator.speed = ExternalSpeed > 0.2f ? 1 : 0; return; } // copia de red
-            animator.speed = enemy.IsBusy ? 1 : agent.enabled && agent.isOnNavMesh && agent.velocity.sqrMagnitude > 0.04f ? 1 : 0;
+            // Se frena y arranca poco a poco (antes pasaba de 0 a 1 de golpe y parecia congelarse).
+            bool moving = ExternalSpeed >= 0f ? ExternalSpeed > 0.2f // copia de red
+                : enemy.IsBusy || (agent.enabled && agent.isOnNavMesh && agent.velocity.sqrMagnitude > 0.04f);
+            float target = moving ? 1f : 0.12f;
+            animator.speed = Mathf.MoveTowards(animator.speed, target, 4f * Time.deltaTime);
         }
         [System.NonSerialized] public float ExternalSpeed = -1f;
     }

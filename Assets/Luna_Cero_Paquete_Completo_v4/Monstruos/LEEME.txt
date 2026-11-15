@@ -1,0 +1,23 @@
+LUNA CERO — CRIATURAS V3
+
+4 carpetas; 3 vocalizaciones por criatura + su PNG.
+Audio: WAV PCM de 24 bits, 48 kHz, mono para posicionamiento espacial.
+
+Acechador: gruñidos y bufidos, ataque rasgado y última exhalación.
+Enjambre: chillidos animales superpuestos, llamada rápida y muerte quebrada.
+Escupidor: voz gutural húmeda, expulsión y colapso con gorgoteos.
+Gigante: garganta y pecho de gran tamaño, rugido de 5,4 s y muerte de 5,9 s.
+
+Las bases son vocalizaciones para reproducir con pausas variables, no bucles.
+Su pico es -5 dBFS; los ataques y muertes tienen pico de -1,5 dBFS.
+La mezcla conserva espacio para agregar la reverberación del escenario en
+el motor del juego. Ajustar volumen y distancia según el tamaño de cada criatura.
+
+Esta versión utiliza grabaciones animales y efectos vocales CC0 transformados.
+Ver CREDITOS_Y_FUENTES.txt y PROCEDENCIA.json. No utiliza los osciladores
+de las versiones anteriores. Las imágenes conservan el fondo original.
+
+Validación técnica independiente: ver VERIFICACION.json. El formato,
+duración y ausencia de saturación no certifican realismo ni gusto artístico;
+no se realizó una escucha humana. Se adjunta una muestra de ataques fuera
+del ZIP para facilitar tu revisión.

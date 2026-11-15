@@ -16,6 +16,7 @@ namespace LunaCero
         private LunarPlayerCombat player;
         private float messageUntil;
         private string message;
+        private void Awake(){if(GetComponent<LostInSpaceFinale>()==null)gameObject.AddComponent<LostInSpaceFinale>();}
         public int Installed => installed.Count;
         public bool Repaired => installed.Count >= requiredParts;
 
@@ -28,8 +29,7 @@ namespace LunaCero
             if (part == null || installed.Contains(part)) return;
             installed.Add(part);
             part.Install(position, rotation);
-            message = Repaired ? "NAVE REPARADA! Has recuperado las cinco piezas." : $"Pieza instalada: {part.partName} ({installed.Count}/{requiredParts})";
-            messageUntil = Time.time + 4f;
+            Announce(part);
         }
 
         private void Update()
@@ -66,32 +66,120 @@ namespace LunaCero
         private void Install(LunarShipPart part)
         {
             installed.Add(part);
-            int index = installed.Count - 1;
-            float angle = index * Mathf.PI * 2f / Mathf.Max(1, requiredParts);
-            Vector3 slot = transform.position + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * (radius * 0.55f);
-            part.Install(slot, Quaternion.Euler(0, angle * Mathf.Rad2Deg, 0) * part.transform.rotation);
-            message = Repaired ? "NAVE REPARADA! Has recuperado las cinco piezas." : $"Pieza instalada: {part.partName} ({installed.Count}/{requiredParts})";
+            // La pieza pasa a formar parte de la nave: su seccion del holograma se vuelve solida.
+            part.Install(transform.position + Vector3.down * 2f, part.transform.rotation);
+            Announce(part);
+        }
+
+        private void Announce(LunarShipPart part)
+        {
+            message = Repaired ? $"NAVE REPARADA! Las {requiredParts} piezas estan instaladas." : $"Pieza instalada: {part.partName} ({installed.Count}/{requiredParts})";
             messageUntil = Time.time + 4f;
+        }
+
+        // ------------------------------------------------------------ progreso visible de la reparacion
+        private Renderer[] sections = new Renderer[0];
+        private ParticleSystem smoke, sparks;
+        private Light statusLight;
+        private int shownInstalled = -1;
+        private bool hasDirector;
+
+        private void Start()
+        {
+            hasDirector = FindObjectOfType<LunarHordeDirector>() != null;
+            // Holograma de la nave Condor sobre el anillo: una seccion por cada pieza del catalogo.
+            sections = LunarShipRebuild.BuildFrame(transform);
+            // Humo y chispas sobre la nave: disminuyen con cada pieza instalada.
+            var ship = GameObject.Find("Nave_Proa");
+            Vector3 wreck = ship != null ? ship.transform.position + Vector3.up * 1.5f : transform.position + Vector3.up * 2f;
+            smoke = Emitter("Humo de la nave", wreck, new Color(0.25f, 0.25f, 0.27f, 0.45f), 2.5f, 1.4f, 4f, 1.6f, 0.05f);
+            sparks = Emitter("Chispas de la nave", wreck, new Color(1f, 0.6f, 0.2f), 0.6f, 4f, 0.12f, 0.6f, -0.4f);
+            statusLight = new GameObject("Luz de estado de la nave").AddComponent<Light>();
+            statusLight.transform.SetParent(transform, false);
+            statusLight.transform.localPosition = Vector3.up * 3f;
+            statusLight.type = LightType.Point;
+            statusLight.range = 10f;
+            statusLight.intensity = 1.6f;
+            RefreshProgress();
+        }
+
+        private ParticleSystem Emitter(string name, Vector3 position, Color color, float lifetime, float speed, float size, float spread, float gravity)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, true);
+            go.transform.position = position;
+            go.transform.rotation = Quaternion.Euler(-90, 0, 0);
+            var particles = go.AddComponent<ParticleSystem>();
+            var main = particles.main;
+            main.startLifetime = lifetime;
+            main.startSpeed = speed;
+            main.startSize = size;
+            main.startColor = color;
+            main.gravityModifier = gravity;
+            main.maxParticles = 120;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            var shape = particles.shape;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle = 18f;
+            shape.radius = spread;
+            var sizeOverLife = particles.sizeOverLifetime;
+            sizeOverLife.enabled = true;
+            sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, gravity > 0 ? AnimationCurve.Linear(0, 0.6f, 1, 1.8f) : AnimationCurve.Linear(0, 1, 1, 0));
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = LunarHud.Particle(color);
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            return particles;
+        }
+
+        private void LateUpdate()
+        {
+            if (shownInstalled != installed.Count) RefreshProgress();
+        }
+
+        private void RefreshProgress()
+        {
+            shownInstalled = installed.Count;
+            float done = installed.Count / (float)Mathf.Max(1, requiredParts);
+            var filled = new HashSet<int>();
+            foreach (var part in installed)
+            {
+                if (part == null) continue;
+                filled.Add(LunarShipRebuild.IndexOf(part.partName));
+                // La pieza suelta desaparece: ahora es parte de la nave.
+                foreach (var r in part.GetComponentsInChildren<Renderer>()) r.enabled = false;
+            }
+            for (int i = 0; i < sections.Length; i++) LunarShipRebuild.Paint(sections[i], i, filled.Contains(i));
+            if (smoke != null) { var emission = smoke.emission; emission.rateOverTime = 14f * (1f - done); }
+            if (sparks != null) { var emission = sparks.emission; emission.rateOverTime = 10f * (1f - done); }
+            if (statusLight != null) statusLight.color = Color.Lerp(new Color(1f, 0.25f, 0.15f), new Color(0.3f, 1f, 0.45f), done);
         }
 
         private void OnGUI()
         {
-            float scale = Mathf.Max(0.5f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
-            Matrix4x4 previous = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
-            float width = Screen.width / scale;
-            // Bajo el panel del director (arriba a la derecha); la izquierda la ocupa el radar.
-            GUI.Box(new Rect(width - 320, 126, 300, 26), $"Piezas de la nave: {installed.Count}/{requiredParts}  (azules en el radar)");
-            if (Time.time < messageUntil) GUI.Box(new Rect(width / 2 - 220, 140, 440, 30), message);
-            if (Repaired) GUI.Box(new Rect(width / 2 - 220, Screen.height / scale / 2 - 90, 440, 60), "MISION CUMPLIDA\nLa nave Condor esta reparada.");
+            if (LunarPlayerRole.MenuOpen || LostInSpaceFinale.Active) return;
+            var size = LunarHud.Begin(out var previous);
+            float width = size.x, height = size.y;
+            // Progreso de la nave: una linea con barra, debajo del panel del director.
+            float y = LunarPlayerCombat.VitalsPanelBottom + (hasDirector ? 56 : 10);
+            GUI.Label(new Rect(width - 272, y, 120, 22), $"Nave  {installed.Count}/{requiredParts}", LunarHud.Label);
+            var track = new Rect(width - 182, y + 7, 168, 9);
+            LunarHud.Fill(track, new Color(1f, 1f, 1f, 0.18f));
+            LunarHud.Fill(new Rect(track.x, track.y, track.width * installed.Count / Mathf.Max(1f, requiredParts), track.height), new Color(0.3f, 1f, 0.5f, 0.95f));
+            if (Time.time < messageUntil) LunarHud.Prompt(width / 2, 120, null, message, null, Repaired);
+            if (Repaired) LunarHud.Prompt(width / 2, height / 2 - 120, null, "MISION CUMPLIDA", "La nave Condor esta reparada. Preparando el despegue...", true);
             Camera camera = Camera.main;
             if (camera != null && !Repaired)
             {
                 Vector3 screen = camera.WorldToScreenPoint(transform.position + Vector3.up * 3f);
                 float distance = Vector3.Distance(camera.transform.position, transform.position);
-                // El piloto ve siempre donde esta la nave.
-                if (screen.z > 0 && distance < (player != null && player.Role.shipMarker ? 5000 : 120))
-                    GUI.Box(new Rect(screen.x / scale - 110, (Screen.height - screen.y) / scale, 220, 40), $"REPARACION DE NAVE [{distance:0} m]\nSuelta aqui las piezas");
+                bool carrying = player != null && player.HeldObject != null && player.HeldObject.GetComponent<LunarShipPart>() != null;
+                // Solo cuando sirve: de lejos (para orientarse) o llevando una pieza. Cerca ya se ve el anillo verde.
+                float range = player != null && player.Role.shipMarker ? 5000 : 150;
+                if (screen.z > 0 && distance < range && (distance > 25f || carrying))
+                {
+                    float s = LunarHud.Scale;
+                    LunarHud.Marker(screen.x / s, (Screen.height - screen.y) / s, $"Nave  {distance:0} m", new Color(0.4f, 1f, 0.55f));
+                }
             }
             GUI.matrix = previous;
         }

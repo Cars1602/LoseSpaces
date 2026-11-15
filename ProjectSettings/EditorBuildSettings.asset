@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MenuPrincipal.unity
+    guid: 0a354e6bb7d235d4ca49edea074e678f
+  - enabled: 1
     path: Assets/LunaCero/Scenes/LunaCeroMapaGrande.unity
     guid: bc4f3c16a79372644860e8d41248aa9d
   - enabled: 1

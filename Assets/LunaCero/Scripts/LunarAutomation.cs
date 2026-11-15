@@ -14,7 +14,7 @@ namespace LunaCero
             {
                 if (Application.isBatchMode) return true;
 #if UNITY_EDITOR
-                return Object.FindObjectOfType<LunarCombatSmokeTest>() != null || Object.FindObjectOfType<LunarSurvivalSmokeTest>() != null;
+                return Object.FindObjectOfType<LostInSpaceSmokeTest>() != null || Object.FindObjectOfType<LunarTerrainRegressionTest>() != null || Object.FindObjectOfType<LunarCoopRegressionTest>() != null || Object.FindObjectOfType<LunarCombatSmokeTest>() != null || Object.FindObjectOfType<LunarSurvivalSmokeTest>() != null;
 #else
                 return false;
 #endif
@@ -22,3 +22,5 @@ namespace LunaCero
         }
     }
 }
+
+

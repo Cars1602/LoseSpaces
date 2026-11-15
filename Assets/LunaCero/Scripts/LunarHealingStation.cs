@@ -36,17 +36,18 @@ namespace LunaCero
         }
         private void OnGUI()
         {
+            if (Event.current.type != EventType.Repaint || LunarPlayerRole.MenuOpen || LostInSpaceFinale.Active) return;
             Camera camera = Camera.main;
             if (camera == null) return;
             float distance = Vector3.Distance(camera.transform.position, transform.position);
-            if (distance > 100) return;
+            if (distance > 12f) return; // de lejos la guia el panel de la derecha; aqui solo se explica al llegar
             Vector3 position = camera.WorldToScreenPoint(transform.position + Vector3.up * 4f);
             if (position.z <= 0) return;
-            float scale = Mathf.Max(0.5f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
-            Matrix4x4 previous = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
-            string prompt = Exhausted ? "AGOTADA: busca otra estacion" : Ready ? "F: sanar dentro del anillo" : $"Disponible en {Mathf.CeilToInt(ReadyAt - Time.time)} s";
-            GUI.Box(new Rect(position.x / scale - 115, (Screen.height - position.y) / scale, 230, 65), $"ESTACION MEDICA [{distance:0} m]\nCuraciones: {RemainingUses}/{maximumUses}\n{prompt}");
+            LunarHud.Begin(out var previous);
+            float scale = LunarHud.Scale;
+            string prompt = Exhausted ? "AGOTADA: busca otra estacion" : Ready ? $"Sanar dentro del anillo  |  Curaciones: {RemainingUses}/{maximumUses}" : $"Disponible en {Mathf.CeilToInt(ReadyAt - Time.time)} s";
+            bool inside = Contains(camera.transform.position);
+            LunarHud.Prompt(position.x / scale, (Screen.height - position.y) / scale, inside && Ready ? "F" : null, $"Estacion medica  [{distance:0} m]", prompt);
             GUI.matrix = previous;
         }
     }

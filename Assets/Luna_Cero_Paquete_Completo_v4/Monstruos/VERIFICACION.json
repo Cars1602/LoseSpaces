@@ -1,0 +1,399 @@
+{
+  "paquete": "Luna Cero Criaturas v3",
+  "tipo_de_revision": "Verificacion tecnica independiente, sin escucha humana ni valoracion perceptiva de realismo o miedo.",
+  "resultado_general": "correcto",
+  "cantidad_WAV": 12,
+  "cantidad_PNG": 4,
+  "12_audio_archivos_unicos": true,
+  "alcance": "Reapertura de PCM24 con extension de signo correcta; formato, duracion exacta, señal, picos, saturacion digital, extremos, bloques activos repetidos, similitud entre archivos y PNG originales. Un salto pequeño en los extremos reduce el riesgo de clic al iniciar o terminar; esto no garantiza ausencia perceptiva de cualquier artefacto interno.",
+  "audios": [
+    {
+      "archivo": "Acechador/Acechador_ataque_enojo.wav",
+      "resultado": "correcto",
+      "duracion_s": 2.3,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 110400,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -16.341,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.05,
+        "40_a_250_Hz": 12.52,
+        "250_a_4000_Hz": 87.4,
+        "mas_4000_Hz": 0.03
+      },
+      "sha256": "322ab56047b08fde44a33d4cf2772a8b96f2b71d5ccb0fef50d82bb19daf701b"
+    },
+    {
+      "archivo": "Acechador/Acechador_base_ambiente.wav",
+      "resultado": "correcto",
+      "duracion_s": 4.5,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 216000,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -5.0,
+      "RMS_dBFS": -19.896,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.0,
+        "40_a_250_Hz": 12.71,
+        "250_a_4000_Hz": 87.26,
+        "mas_4000_Hz": 0.03
+      },
+      "sha256": "62d6151107f4013fb3e646ff4880099a3cb3953a6ebe07d4e40abebb259666d9"
+    },
+    {
+      "archivo": "Acechador/Acechador_muerte.wav",
+      "resultado": "correcto",
+      "duracion_s": 3.2,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 153600,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -16.647,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.0,
+        "40_a_250_Hz": 20.93,
+        "250_a_4000_Hz": 79.06,
+        "mas_4000_Hz": 0.0
+      },
+      "sha256": "de2db9a2e830471c0766a1f0755ed98f5ef6b51b013ec85407c7f6cd17cdc0f7"
+    },
+    {
+      "archivo": "Enjambre/Enjambre_ataque_enojo.wav",
+      "resultado": "correcto",
+      "duracion_s": 2.15,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 103200,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -16.551,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.000187397,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.06,
+        "40_a_250_Hz": 0.9,
+        "250_a_4000_Hz": 72.67,
+        "mas_4000_Hz": 26.37
+      },
+      "sha256": "09f016917591d7dc7205af10304e38fdc8ef797df3a1cbb39258883ccad7fd57"
+    },
+    {
+      "archivo": "Enjambre/Enjambre_base_ambiente.wav",
+      "resultado": "correcto",
+      "duracion_s": 3.5,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 168000,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -5.0,
+      "RMS_dBFS": -22.463,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.02,
+        "40_a_250_Hz": 0.09,
+        "250_a_4000_Hz": 76.44,
+        "mas_4000_Hz": 23.46
+      },
+      "sha256": "74c48aad5127dc7c1299ef0e3ed486b8bee538a3764a997626cd36b4c57df489"
+    },
+    {
+      "archivo": "Enjambre/Enjambre_muerte.wav",
+      "resultado": "correcto",
+      "duracion_s": 2.7,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 129600,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -19.48,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.25,
+        "40_a_250_Hz": 0.16,
+        "250_a_4000_Hz": 99.15,
+        "mas_4000_Hz": 0.44
+      },
+      "sha256": "c3d1bafbbb765bfabb691ed4626690c66e0c7b8b827b88107b5fdbcaad5ae085"
+    },
+    {
+      "archivo": "Escupidor/Escupidor_ataque_enojo.wav",
+      "resultado": "correcto",
+      "duracion_s": 2.95,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 141600,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -10.881,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.0,
+        "40_a_250_Hz": 3.34,
+        "250_a_4000_Hz": 96.02,
+        "mas_4000_Hz": 0.64
+      },
+      "sha256": "9d71296acbaf73fd540919d2a7e5f590b97edb949f3d8b1933db86f0ba734fef"
+    },
+    {
+      "archivo": "Escupidor/Escupidor_base_ambiente.wav",
+      "resultado": "correcto",
+      "duracion_s": 4.1,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 196800,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -5.0,
+      "RMS_dBFS": -13.595,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.0,
+        "40_a_250_Hz": 46.0,
+        "250_a_4000_Hz": 53.95,
+        "mas_4000_Hz": 0.05
+      },
+      "sha256": "21bc8d1645861f128db5a3218e2f28942d7b2d19671429bf5743be56da742d81"
+    },
+    {
+      "archivo": "Escupidor/Escupidor_muerte.wav",
+      "resultado": "correcto",
+      "duracion_s": 4.0,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 192000,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -10.636,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.0,
+        "40_a_250_Hz": 59.15,
+        "250_a_4000_Hz": 40.84,
+        "mas_4000_Hz": 0.01
+      },
+      "sha256": "8dc9e0a948b199ee3acc1a05d3db47bf2e2b84a4c6885dfe6016dadaede30074"
+    },
+    {
+      "archivo": "Gigante/Gigante_ataque_enojo.wav",
+      "resultado": "correcto",
+      "duracion_s": 5.4,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 259200,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -12.81,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 1.61,
+        "40_a_250_Hz": 15.91,
+        "250_a_4000_Hz": 82.48,
+        "mas_4000_Hz": 0.0
+      },
+      "sha256": "1ed1f18e17d63352899750e7b8c24a7fc7ccd2ef5b7279fa605aa774715b0fa6"
+    },
+    {
+      "archivo": "Gigante/Gigante_base_ambiente.wav",
+      "resultado": "correcto",
+      "duracion_s": 5.0,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 240000,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -5.0,
+      "RMS_dBFS": -15.111,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.0,
+        "40_a_250_Hz": 70.86,
+        "250_a_4000_Hz": 29.14,
+        "mas_4000_Hz": 0.0
+      },
+      "sha256": "2c771049f64a06369cada46dafac30f28ac272bd0c4b9ba1e2a3ab36ffd57b17"
+    },
+    {
+      "archivo": "Gigante/Gigante_muerte.wav",
+      "resultado": "correcto",
+      "duracion_s": 5.9,
+      "duracion_coincide_con_procedencia": true,
+      "muestras": 283200,
+      "formato": {
+        "PCM_bits": 24,
+        "canales": 1,
+        "Hz": 48000
+      },
+      "pico_dBFS": -1.5,
+      "RMS_dBFS": -11.496,
+      "muestras_saturadas": 0,
+      "maximo_valor_absoluto_extremos": 0.0,
+      "mayor_salto_entre_muestras_en_primeros_y_ultimos_10ms": 0.0,
+      "bloques_activos_200ms_exactamente_repetidos": 0,
+      "energia_por_banda_porcentaje": {
+        "menos_40_Hz": 0.08,
+        "40_a_250_Hz": 71.83,
+        "250_a_4000_Hz": 28.09,
+        "mas_4000_Hz": 0.0
+      },
+      "sha256": "e4af8ad5e0356ee28752c234331350ef70240d92c72bc53733823b59c4b100e3"
+    }
+  ],
+  "imagenes": [
+    {
+      "archivo": "Acechador/Acechador.png",
+      "dimensiones": [
+        412,
+        285
+      ],
+      "modo": "RGB",
+      "PNG_reabierto_y_verificado": true,
+      "identico_al_recorte_previo": true
+    },
+    {
+      "archivo": "Enjambre/Enjambre.png",
+      "dimensiones": [
+        264,
+        210
+      ],
+      "modo": "RGB",
+      "PNG_reabierto_y_verificado": true,
+      "identico_al_recorte_previo": true
+    },
+    {
+      "archivo": "Escupidor/Escupidor.png",
+      "dimensiones": [
+        330,
+        369
+      ],
+      "modo": "RGB",
+      "PNG_reabierto_y_verificado": true,
+      "identico_al_recorte_previo": true
+    },
+    {
+      "archivo": "Gigante/Gigante.png",
+      "dimensiones": [
+        566,
+        513
+      ],
+      "modo": "RGB",
+      "PNG_reabierto_y_verificado": true,
+      "identico_al_recorte_previo": true
+    }
+  ],
+  "mayores_similitudes_entre_audios": [
+    {
+      "archivos": [
+        "Gigante/Gigante_base_ambiente.wav",
+        "Gigante/Gigante_muerte.wav"
+      ],
+      "correlacion_maxima_con_desplazamiento": 0.09175
+    },
+    {
+      "archivos": [
+        "Escupidor/Escupidor_muerte.wav",
+        "Gigante/Gigante_base_ambiente.wav"
+      ],
+      "correlacion_maxima_con_desplazamiento": 0.08499
+    },
+    {
+      "archivos": [
+        "Escupidor/Escupidor_base_ambiente.wav",
+        "Escupidor/Escupidor_muerte.wav"
+      ],
+      "correlacion_maxima_con_desplazamiento": 0.08491
+    },
+    {
+      "archivos": [
+        "Escupidor/Escupidor_muerte.wav",
+        "Gigante/Gigante_muerte.wav"
+      ],
+      "correlacion_maxima_con_desplazamiento": 0.07588
+    },
+    {
+      "archivos": [
+        "Escupidor/Escupidor_muerte.wav",
+        "Gigante/Gigante_ataque_enojo.wav"
+      ],
+      "correlacion_maxima_con_desplazamiento": 0.07326
+    },
+    {
+      "archivos": [
+        "Escupidor/Escupidor_ataque_enojo.wav",
+        "Escupidor/Escupidor_base_ambiente.wav"
+      ],
+      "correlacion_maxima_con_desplazamiento": 0.07245
+    }
+  ],
+  "interpretacion_medios_Gigante": "El porcentaje 250_a_4000_Hz documenta contenido de garganta en medios, ademas de la energia grave. No equivale a una prueba de escucha en altavoces.",
+  "incidencias": []
+}

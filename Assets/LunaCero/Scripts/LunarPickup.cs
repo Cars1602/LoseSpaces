@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace LunaCero
@@ -9,6 +10,7 @@ namespace LunaCero
     {
         public LunarPickupKind kind;
         public int quantity = 1;
+        public string ammoWeaponId;
         public string displayName = "Objeto";
         public string persistenceKey;
         [Tooltip("Texto de la accion en el aviso: 'E: <verbo> <nombre>'")]
@@ -40,8 +42,18 @@ namespace LunaCero
 
         private void Start()
         {
-            if (kind != LunarPickupKind.Weapon || useOwnModel) return;
-            var prefab = Resources.Load<GameObject>("LunarWeapons/" + weaponId);
+            string modelId=weaponId;
+            if(kind==LunarPickupKind.Ammo)
+            {
+                if(string.IsNullOrEmpty(ammoWeaponId)) { int code=Mathf.RoundToInt(transform.position.x*10)^Mathf.RoundToInt(transform.position.z*10); ammoWeaponId=new[]{"pistola","rifle","escopeta"}[(code & int.MaxValue)%3]; }
+                modelId="ammo-"+ammoWeaponId;
+                int variant=Mathf.RoundToInt(transform.position.x*10)^Mathf.RoundToInt(transform.position.z*10);
+                if(ammoWeaponId=="pistola" && (variant & 3)==0) { modelId="cartridge-pistola"; quantity=Mathf.Min(quantity,6); }
+                displayName="municion de "+ammoWeaponId;
+            }
+            else if(kind!=LunarPickupKind.Weapon) return;
+            var prefab = Resources.Load<GameObject>("LunarWeapons/" + modelId);
+            if(prefab!=null && kind==LunarPickupKind.Weapon) useOwnModel=false;
             if (prefab == null) return;
             // Also replace visuals baked into previously saved maps, keeping their interaction colliders.
             foreach (var renderer in GetComponentsInChildren<Renderer>()) renderer.enabled = false;
@@ -66,9 +78,12 @@ namespace LunaCero
         [System.NonSerialized] public int NetId = -1;
         public bool IsShared => kind != LunarPickupKind.AmmoLocker;
 
+        // Toda la municion se puede recoger: si no tienes esa arma se guarda hasta que la encuentres.
+        public bool CanUse(LunarPlayerCombat player) => true;
         public bool Use(LunarPlayerCombat player)
         {
             if (player == null || !player.CanAct || IsHeld) return false;
+            if(!CanUse(player)) { player.Notify("Esta municion requiere otra arma."); return false; }
             if (!Granted && IsShared && RequestUse != null && RequestUse(this, player)) return false;
             Granted = false;
             switch (kind)
@@ -92,6 +107,7 @@ namespace LunaCero
                         data.model = BuildHandModel(player.transform);
                     }
                     player.AddWeapon(data);
+                    LunarAudio.Play("Armas/" + LunarAudio.Weapon(data.id) + "/Recoger_Arma", transform.position, 0.6f, false);
                     break;
                 case LunarPickupKind.Medkit:
                     player.AddMedkits(quantity);
@@ -100,7 +116,9 @@ namespace LunaCero
                     player.AddIce(quantity);
                     break;
                 default:
-                    player.AddAmmo(quantity);
+                    if(!player.AddAmmoForWeapon(ammoWeaponId,quantity)) return false;
+                    string family = player.CurrentWeapon?.Data.id == "escopeta" ? "Cartuchos_de_Pulso" : player.CurrentWeapon?.Data.id == "plasma" ? "Capsula_de_Plasma" : player.CurrentWeapon?.Data.id == "pistola" ? "Municion_Pistola" : "Celdas_de_Rifle";
+                    LunarAudio.Play("Municiones/" + family + "/Recoger_01", transform.position, 0.6f, false);
                     break;
             }
             if (!string.IsNullOrEmpty(persistenceKey)) FindObjectOfType<LunarEndlessWorld>()?.MarkCollected(persistenceKey);
@@ -127,7 +145,7 @@ namespace LunaCero
             foreach (var filter in GetComponentsInChildren<MeshFilter>())
             {
                 var source = filter.GetComponent<MeshRenderer>();
-                if (filter.sharedMesh == null || source == null) continue;
+                if (filter.sharedMesh == null || source == null || !source.enabled) continue;
                 var part = new GameObject(filter.name);
                 part.transform.SetParent(shape, false);
                 Matrix4x4 local = transform.worldToLocalMatrix * filter.transform.localToWorldMatrix;
@@ -179,7 +197,7 @@ namespace LunaCero
             {
                 Bounds bounds = renderers[0].bounds;
                 foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
-                heldCenterOffset = bounds.center - transform.position;
+                heldCenterOffset = Quaternion.Inverse(transform.rotation) * (bounds.center - transform.position);
                 transform.position += socket.position - bounds.center;
             }
         }
@@ -189,7 +207,8 @@ namespace LunaCero
             if (!IsHeld) return;
             transform.SetParent(originalParent, true);
             // La posicion de suelta representa el centro visible, no el pivote importado.
-            transform.position = position - heldCenterOffset;
+            transform.position = position - (transform.rotation * heldCenterOffset);
+            if(body != null) { body.position=transform.position; body.rotation=transform.rotation; }
             IsHeld = false;
             for (int i = 0; i < colliders.Length; i++) colliders[i].enabled = colliderStates[i];
             if (body != null)
@@ -202,12 +221,29 @@ namespace LunaCero
             LastReleaseVelocity = velocity;
             Released?.Invoke(this);
         }
+        public void FollowRemote(Vector3 center, Quaternion rotation)
+        {
+            if(!RemotelyHeld) SetRemoteHeld(true);
+            transform.rotation=rotation;
+            var renderers=GetComponentsInChildren<Renderer>();
+            Vector3 visibleCenter=transform.position;
+            var visible=System.Array.FindAll(renderers,r=>r.enabled);
+            if(visible.Length>0) { var bounds=visible[0].bounds; foreach(var r in visible) bounds.Encapsulate(r.bounds); visibleCenter=bounds.center; }
+            transform.position+=center-visibleCenter;
+            if(body != null) { body.position=transform.position; body.rotation=rotation; }
+        }
         public Vector3 LastReleaseVelocity { get; private set; }
 
         /// <summary>Red: otro jugador lo lleva (se oculta) o lo solto (vuelve a verse y a colisionar).</summary>
         public void SetRemoteHeld(bool heldByOther)
         {
-            foreach (var r in GetComponentsInChildren<Renderer>()) r.enabled = !heldByOther;
+            if(heldByOther && !RemotelyHeld)
+            {
+                remoteRenderers=GetComponentsInChildren<Renderer>(); remoteRendererStates=new bool[remoteRenderers.Length];
+                for(int i=0;i<remoteRenderers.Length;i++) remoteRendererStates[i]=remoteRenderers[i].enabled;
+            }
+            if(!heldByOther && remoteRenderers!=null)
+                for(int i=0;i<remoteRenderers.Length;i++) if(remoteRenderers[i]!=null) remoteRenderers[i].enabled=remoteRendererStates[i];
             foreach (var c in colliders) if (c != null) c.enabled = !heldByOther;
             if (body != null) body.isKinematic = heldByOther || ForceKinematic; // sin colision no debe caer
             RemotelyHeld = heldByOther;
@@ -219,8 +255,11 @@ namespace LunaCero
             set { forceKinematic = value; if (body != null && !IsHeld) body.isKinematic = value; }
         }
         private bool forceKinematic;
+        private Renderer[] remoteRenderers;
+        private bool[] remoteRendererStates;
         public Rigidbody Body => body;
         public bool RemotelyHeld { get; private set; }
     }
 }
+
 

@@ -1,0 +1,39 @@
+LUNA CERO — VOCALIZACIONES DE CRIATURAS V3
+
+Diseño y mezcla para Luna Cero mediante edición, cambios de velocidad/tono,
+capas, ecualización, dinámica y reflexiones cortas de grabaciones y efectos
+de terceros con licencia CC0. Las mezclas son nuevas; no son grabaciones
+exclusivas ni audios íntegramente generados desde cero.
+
+FUENTES UTILIZADAS (todas publicadas como CC0):
+
+Bear Growls — AntumDeluge; grabaciones del U.S. Fish & Wildlife Service.
+https://opengameart.org/content/bear-growls
+
+Camel Groan — AntumDeluge, a partir de grabaciones de craigsmith.
+https://opengameart.org/content/camel-groan
+https://freesound.org/s/437937/
+
+Gorilla Sounds — AntumDeluge; J0ck0 y mediacollege.com.
+https://opengameart.org/content/gorilla-sounds
+https://freesound.org/s/397054/
+https://www.mediacollege.com/downloads/sound-effects/animals/primates/
+
+Bat Screeches — AntumDeluge / polymorpheva.
+https://opengameart.org/content/bat-screeches
+https://freesound.org/s/104205/
+
+80 CC0 creture SFX #2 — rubberduck.
+https://opengameart.org/content/80-cc0-creture-sfx-2
+
+CC0 Deep Monster Roar — trazzz123.
+https://opengameart.org/content/cc0-deep-monster-roar
+
+Licencia de las fuentes: Creative Commons Zero 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+Permite adaptar y usar las fuentes en proyectos comerciales. Los créditos
+anteriores se conservan para documentar su procedencia.
+
+Los cuatro PNG son recortes de la imagen aportada por el usuario, con fondo.
+No se modifica ni se afirma una licencia sobre la ilustración original.
+El archivo PROCEDENCIA.json detalla las capas usadas para cada mezcla.

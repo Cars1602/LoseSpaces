@@ -25,6 +25,22 @@ namespace LunaCero
         private float shotUntil;
         private bool placed;
         public LunarHealth Health => health;
+        private uint lastSequence;
+        private string weaponId;
+        private Transform weaponAnchor;
+        public bool AcceptSequence(uint sequence) { if(sequence<=lastSequence) return false; lastSequence=sequence; return true; }
+        public void SetWeapon(string id)
+        {
+            if(weaponId==id) return;
+            weaponId=id;
+            if(weaponAnchor!=null) Destroy(weaponAnchor.gameObject);
+            foreach(var r in GetComponentsInChildren<Renderer>(true))
+                if(animator==null || !r.transform.IsChildOf(animator.transform)) r.enabled=false;
+            weaponAnchor=new GameObject("Arma remota").transform; weaponAnchor.SetParent(transform,false);
+            weaponAnchor.localPosition=new Vector3(0.45f,1.15f,0.6f);
+            var model=Resources.Load<GameObject>("LunarWeapons/"+id);
+            if(model!=null) { var copy=Instantiate(model,weaponAnchor); foreach(var c in copy.GetComponentsInChildren<Collider>()) Destroy(c); }
+        }
 
         private void Awake()
         {
@@ -76,6 +92,7 @@ namespace LunaCero
             else transform.position = Vector3.Lerp(transform.position, targetPosition, 1f - Mathf.Exp(-14f * dt));
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, yaw, 0), 1f - Mathf.Exp(-14f * dt));
             lamp.transform.rotation = Quaternion.Euler(pitch, yaw, 0);
+            if(weaponAnchor!=null) weaponAnchor.localRotation=Quaternion.Euler(pitch,0,0);
             lamp.enabled = flashlight && !dead;
             string state = dead ? "Muerte" : !grounded ? "Saltar" : Time.time < shotUntil ? "Disparar" : speed > 4.2f ? "Correr" : speed > 0.15f ? "Caminar" : "Reposo";
             if (animator != null && state != current && animator.HasState(0, Animator.StringToHash(state)))
@@ -85,8 +102,22 @@ namespace LunaCero
             }
         }
 
+        private Transform rightHand;
+        private bool handSearched;
+
         private void LateUpdate()
         {
+            // El arma del companero sigue a su mano derecha (antes flotaba delante del cuerpo).
+            if (weaponAnchor != null)
+            {
+                if (!handSearched) { handSearched = true; rightHand = LunarHandHold.FindRightHand(transform); }
+                if (rightHand != null)
+                {
+                    bool melee = LunarWeaponData.Find(weaponId)?.IsMelee ?? false;
+                    Quaternion look = Quaternion.LookRotation(Vector3.ProjectOnPlane(transform.forward, Vector3.up), Vector3.up);
+                    weaponAnchor.SetPositionAndRotation(rightHand.position, melee ? look * Quaternion.Euler(-65f, 0f, 0f) : look);
+                }
+            }
             if (hips == null || animator == null || current == "Muerte") return;
             Transform root = animator.transform;
             Vector3 local = root.InverseTransformPoint(hips.position);

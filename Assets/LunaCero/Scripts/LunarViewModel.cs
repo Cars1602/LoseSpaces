@@ -114,6 +114,7 @@ namespace LunaCero
                 var renderers = model.GetComponentsInChildren<Renderer>();
                 bounds = LocalBounds(weaponRoot, renderers);
                 float factor = length / Mathf.Max(0.01f, bounds.size.z);
+                if(data.IsMelee) factor=Mathf.Min(0.38f/Mathf.Max(0.01f,Mathf.Max(bounds.size.x,bounds.size.y,bounds.size.z)),0.13f/Mathf.Max(0.01f,bounds.size.x));
                 model.transform.localScale *= factor;
                 bounds = LocalBounds(weaponRoot, renderers);
                 // La empunadura queda en el origen: canon hacia delante, parte baja a la altura de la mano.
@@ -156,8 +157,8 @@ namespace LunaCero
                 // Objeto contundente: agarrado por el mango (las dos manos juntas) y levantado como un bate.
                 rightGrip.localPosition = new Vector3(0.01f, bounds.center.y, bounds.min.z + 0.03f);
                 leftGrip.localPosition = new Vector3(-0.01f, bounds.center.y, bounds.min.z + 0.13f);
-                weaponRoot.localRotation = Quaternion.Euler(-50f, 8f, 0f);
-                weaponRoot.localPosition = new Vector3(0.02f, -0.06f, -0.04f);
+                weaponRoot.localRotation = Quaternion.Euler(-25f, 12f, 0f);
+                weaponRoot.localPosition = new Vector3(0.07f, -0.10f, 0.10f);
             }
             if (combat != null) combat.MuzzleOverride = active ? muzzle : null;
         }

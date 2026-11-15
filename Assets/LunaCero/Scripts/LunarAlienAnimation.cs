@@ -37,6 +37,9 @@ namespace LunaCero
             if (animator == null) animator = GetComponentInChildren<Animator>();
             if (animator == null) return;
             animator.applyRootMotion = false;
+            // Fuera de camara sigue avanzando el ciclo (sin calcular huesos): al volver a verlo no da saltos.
+            animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+            animator.updateMode = AnimatorUpdateMode.Normal;
             if (hips == null) hips = FindHips(animator.transform);
             if (hips != null) hipsRest = animator.transform.InverseTransformPoint(hips.position);
         }
@@ -52,7 +55,7 @@ namespace LunaCero
             if (dead || animator == null) return;
             attackUntil = Time.time + attackDuration;
             animator.speed = 1;
-            animator.CrossFadeInFixedTime(attackState, 0.08f, 0, 0f);
+            animator.CrossFadeInFixedTime(attackState, 0.15f, 0, 0f);
             current = attackState;
         }
 
@@ -74,12 +77,17 @@ namespace LunaCero
             if (Time.time < attackUntil) return;
             if (current != moveState)
             {
-                animator.CrossFadeInFixedTime(moveState, 0.12f);
+                animator.CrossFadeInFixedTime(moveState, 0.25f);
                 current = moveState;
             }
+            // La velocidad del agente da tirones (frenadas, giros, rutas nuevas): se suaviza antes de usarla
+            // y el ritmo del clip cambia poco a poco en vez de saltar de lento a rapido.
             float speed = ExternalSpeed >= 0f ? ExternalSpeed : agent != null && agent.enabled && agent.isOnNavMesh ? agent.velocity.magnitude : 0f;
-            animator.speed = speed > 0.2f ? Mathf.Clamp(speed / referenceSpeed, 0.6f, 1.6f) : enemy != null && enemy.IsBusy ? 1f : 0.15f;
+            smoothSpeed = Mathf.SmoothDamp(smoothSpeed, speed, ref speedVelocity, 0.18f);
+            float target = smoothSpeed > 0.25f ? Mathf.Clamp(smoothSpeed / referenceSpeed, 0.7f, 1.5f) : enemy != null && enemy.IsBusy ? 1f : 0.35f;
+            animator.speed = Mathf.Lerp(animator.speed, target, 1f - Mathf.Exp(-6f * Time.deltaTime));
         }
+        private float smoothSpeed, speedVelocity;
 
         private void LateUpdate()
         {

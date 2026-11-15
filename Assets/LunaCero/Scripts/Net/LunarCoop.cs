@@ -18,7 +18,7 @@ namespace LunaCero
     {
         // Mensajes del anfitrion
         private const byte MsgAccept = 1, MsgPlayers = 2, MsgEnemies = 3, MsgRemoved = 4, MsgGrant = 5, MsgDeny = 6,
-            MsgParts = 7, MsgHurt = 8, MsgEffect = 9, MsgHazard = 10, MsgProjectile = 11, MsgHud = 12, MsgKick = 13, MsgLobby = 14;
+            MsgParts = 7, MsgHurt = 8, MsgEffect = 9, MsgHazard = 10, MsgProjectile = 11, MsgHud = 12, MsgKick = 13, MsgLobby = 14, MsgDropAck = 15, MsgVictory = 16;
         // Mensajes de los invitados
         private const byte MsgJoin = 20, MsgState = 21, MsgHit = 22, MsgStagger = 23, MsgUse = 24, MsgDrop = 25, MsgShot = 26;
         private const byte NoHolder = 255;
@@ -34,7 +34,7 @@ namespace LunaCero
             /// <summary>Ultimo estado recibido (se reenvia tal cual a los demas invitados).</summary>
             public byte[] LastState;
         }
-        private const int StateSize = 30; // rol, posicion, giro, mirada, velocidad, banderas, vida, vida maxima
+        private const int StateSize = 35; // rol, posicion, giro, mirada, velocidad, banderas, vida, vida maxima
 
         private sealed class Replica
         {
@@ -42,6 +42,7 @@ namespace LunaCero
             public LunarAlienAnimation Animation;
             public LunarRiderAnimation Rider;
             public Vector3 Position;
+            public Vector3 Velocity; // estimada entre paquetes: se predice el movimiento (sin tirones)
             public float Yaw;
             public float Seen;
             public int AttackCount;
@@ -71,6 +72,9 @@ namespace LunaCero
         private readonly ReliableChannel hostChannel = new ReliableChannel();
         private uint nextEnemyId = 1;
         private float nextPlayers, nextEnemies, nextParts, nextHud, nextJoin;
+        private uint stateSequence, partsSequence;
+        private readonly Dictionary<ushort,uint> partsSeen=new Dictionary<ushort,uint>();
+        private readonly HashSet<ushort> pendingDrops = new HashSet<ushort>();
         private bool accepted;
         private float lastShot;
         private Transform hiddenRoot;
@@ -274,6 +278,7 @@ namespace LunaCero
                 ClientTick();
             }
             AnimateReplicas();
+            FollowCarriedObjects();
         }
 
         private void DropMissingRemotes()
@@ -305,7 +310,10 @@ namespace LunaCero
             {
                 case MsgJoin:
                 {
+                    string protocol = packet.ReadText();
+                    if(protocol != LunarSession.GameProtocol) { SendTo(remote.Id,new Packet(MsgKick).Text("Version de partida incompatible. Actualiza ambos jugadores a " + LunarSession.GameProtocol),true); return; }
                     string scene = packet.ReadText();
+                    if(packet.ReadText() != PickupSignature()) { SendTo(remote.Id,new Packet(MsgKick).Text("Los mapas u objetos no coinciden. Usa la misma compilacion en ambas PCs."),true); return; }
                     if (scene != SceneManager.GetActiveScene().name)
                     {
                         SendTo(remote.Id, new Packet(MsgKick).Text("La sala juega en otro mapa (" + SceneManager.GetActiveScene().name + ")."), true);
@@ -365,7 +373,9 @@ namespace LunaCero
                     if (pickup == null) return;
                     pickup.transform.SetPositionAndRotation(position, rotation);
                     pickup.SetRemoteHeld(false);
-                    if (pickup.Body != null && !pickup.Body.isKinematic) pickup.Body.velocity = velocity;
+                    if (pickup.Body != null) { pickup.Body.position=position; pickup.Body.rotation=rotation; if(!pickup.Body.isKinematic) pickup.Body.velocity = velocity; }
+                    SendTo(remote.Id,new Packet(MsgDropAck).UShort(id).UInt(partsSequence),true);
+                    nextParts=0;
                     break;
                 }
                 case MsgEffect:
@@ -445,12 +455,14 @@ namespace LunaCero
             if (now >= nextParts)
             {
                 nextParts = now + 0.2f;
-                var packet = new Packet(MsgParts);
                 var carried = new List<int>();
                 for (int i = 0; i < pickups.Length; i++)
                     if (parts[i] != null || (pickups[i] != null && pickups[i].kind == LunarPickupKind.Carryable)) carried.Add(i);
-                packet.Byte(carried.Count);
-                foreach (int i in carried)
+                for(int offset=0;offset<carried.Count;offset+=30)
+                {
+                var batch=carried.Skip(offset).Take(30);
+                var packet=new Packet(MsgParts).UInt(++partsSequence).Byte(System.Math.Min(30,carried.Count-offset));
+                foreach (int i in batch)
                 {
                     var t = pickupTransforms[i];
                     bool installed = parts[i] != null && parts[i].Installed;
@@ -458,6 +470,7 @@ namespace LunaCero
                     packet.UShort(i).Vec(t != null ? t.position : Vector3.zero).Rot(t != null ? t.rotation : Quaternion.identity).Byte(holder).Bool(installed).Bool(t == null);
                 }
                 SendAll(packet, false);
+                }
             }
             if (now >= nextHud && director != null)
             {
@@ -475,7 +488,7 @@ namespace LunaCero
             float now = Time.unscaledTime;
             if (!accepted)
             {
-                if (now >= nextJoin) { SendTo(0, new Packet(MsgJoin).Text(SceneManager.GetActiveScene().name), true); nextJoin = now + 3f; }
+                if (now >= nextJoin) { SendTo(0, new Packet(MsgJoin).Text(LunarSession.GameProtocol).Text(SceneManager.GetActiveScene().name).Text(PickupSignature()), true); nextJoin = now + 3f; }
                 return;
             }
             if (now >= nextPlayers)
@@ -494,10 +507,14 @@ namespace LunaCero
                 if (pair.Value == null || now - pair.Value.LastUpdate > 4f) { if (pair.Value != null) Destroy(pair.Value.gameObject); puppets.Remove(pair.Key); }
         }
 
+        public void BroadcastVictory(){if(host)SendAll(new Packet(MsgVictory),true);}
         private void ClientReceive(Packet packet)
         {
             switch (packet.Type)
             {
+                case MsgVictory:
+                    if(repair!=null)repair.GetComponent<LostInSpaceFinale>()?.Begin();
+                    break;
                 case MsgLobby:
                 {
                     bool wasStarted = session.MatchStarted;
@@ -563,6 +580,11 @@ namespace LunaCero
                     player.Notify("Otro tripulante lo tomo primero.");
                     break;
                 }
+                case MsgDropAck:
+                    ushort dropped=packet.ReadUShort();
+                    pendingDrops.Remove(dropped);
+                    partsSeen[dropped]=packet.ReadUInt();
+                    break;
                 case MsgParts:
                     ReadParts(packet);
                     break;
@@ -595,6 +617,7 @@ namespace LunaCero
         private void OnClientReleased(LunarPickup pickup)
         {
             if (pickup.NetId < 0) return;
+            pendingDrops.Add((ushort)pickup.NetId);
             SendTo(0, new Packet(MsgDrop).UShort(pickup.NetId).Vec(pickup.transform.position).Rot(pickup.transform.rotation).Vec(pickup.LastReleaseVelocity), true);
             pickup.ForceKinematic = true;
         }
@@ -606,6 +629,7 @@ namespace LunaCero
 
         private void ReadParts(Packet packet)
         {
+            uint sequence=packet.ReadUInt();
             int count = packet.ReadByte();
             for (int n = 0; n < count; n++)
             {
@@ -615,7 +639,8 @@ namespace LunaCero
                 int holder = packet.ReadByte();
                 bool installed = packet.ReadBool();
                 bool gone = packet.ReadBool();
-                if (id >= pickups.Length || gone) continue;
+                if (id >= pickups.Length || gone || pendingDrops.Contains((ushort)id) || (partsSeen.TryGetValue((ushort)id,out uint seen) && sequence<=seen)) continue;
+                partsSeen[(ushort)id]=sequence;
                 var part = parts[id];
                 if (installed && part != null)
                 {
@@ -627,8 +652,9 @@ namespace LunaCero
                     continue;
                 }
                 var pickup = pickups[id];
-                if (pickup == null || holder == Link.MyId || pickup.IsHeld) continue;
-                if (holder != NoHolder) { if (!pickup.RemotelyHeld) pickup.SetRemoteHeld(true); continue; }
+                if (pickup == null || pendingDrops.Contains((ushort)id) || holder == Link.MyId || pickup.IsHeld) continue;
+                if (holder != NoHolder) { holders[(ushort)id]=holder; if (!pickup.RemotelyHeld) pickup.SetRemoteHeld(true); continue; }
+                holders.Remove((ushort)id);
                 if (pickup.RemotelyHeld) pickup.SetRemoteHeld(false);
                 var t = pickup.transform;
                 if ((t.position - position).sqrMagnitude > 25f) t.SetPositionAndRotation(position, rotation);
@@ -636,6 +662,24 @@ namespace LunaCero
             }
         }
 
+        private static readonly string[] weaponIds={"pistola","rifle","escopeta","riel","plasma","llave","tubo","extintor","barra","escombro"};
+        public static byte WeaponCode(string id) { int index=System.Array.IndexOf(weaponIds,id); return index<0?(byte)255:(byte)index; }
+        public static string WeaponId(byte code) => code<weaponIds.Length?weaponIds[code]:"";
+        private string PickupSignature()
+        {
+            string text=string.Join("|",pickups.Select(p=>p.name+":"+(int)p.kind+":"+p.weaponId));
+            using(var hash=System.Security.Cryptography.SHA256.Create()) return System.BitConverter.ToString(hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(text)));
+        }
+        private void FollowCarriedObjects()
+        {
+            foreach(var pair in holders)
+            {
+                if(pair.Value==Link.MyId || pair.Key>=pickups.Length) continue;
+                var pickup=pickups[pair.Key];
+                if(pickup==null || pickup.IsHeld || pendingDrops.Contains(pair.Key)) continue;
+                if(puppets.TryGetValue(pair.Value,out var puppet) && puppet!=null) pickup.FollowRemote(puppet.transform.TransformPoint(new Vector3(-0.6f,1.05f,0.6f)),puppet.transform.rotation);
+            }
+        }
         // ------------------------------------------------------------ astronautas
         private Packet WriteState(Packet packet)
         {
@@ -643,12 +687,14 @@ namespace LunaCero
             float yaw = controller.View != null ? controller.View.eulerAngles.y : player.transform.eulerAngles.y;
             float speed = new Vector2(body.velocity.x, body.velocity.z).magnitude;
             byte roleIndex = role != null && role.HasRole ? (byte)role.Role : (byte)255;
-            return packet.Byte(roleIndex).Vec(player.transform.position).Angle(yaw).Angle(controller.Pitch).Float(speed).Byte(flags)
+            return packet.UInt(++stateSequence).Byte(WeaponCode(player.CurrentWeapon?.Data.id)).Byte(roleIndex).Vec(player.transform.position).Angle(yaw).Angle(controller.Pitch).Float(speed).Byte(flags)
                 .Float(health.Current).Float(health.Maximum);
         }
 
         private void ReadState(Packet packet, LunarPuppet puppet, out byte roleIndex)
         {
+            uint sequence=packet.ReadUInt();
+            byte weapon=packet.ReadByte();
             roleIndex = packet.ReadByte();
             Vector3 position = packet.ReadVec();
             float yaw = packet.ReadAngle(), pitch = packet.ReadAngle();
@@ -656,7 +702,8 @@ namespace LunaCero
             float speed = packet.ReadFloat();
             byte flags = packet.ReadByte();
             float hp = packet.ReadFloat(), max = packet.ReadFloat();
-            if (puppet == null) return;
+            if (puppet == null || !puppet.AcceptSequence(sequence)) return;
+            puppet.SetWeapon(WeaponId(weapon));
             puppet.Apply(position, yaw, pitch, speed, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0, (flags & 8) != 0, hp, max);
             if (roleIndex < LunarRoleDefinition.All.Length) puppet.RoleColor = LunarRoleDefinition.All[roleIndex].color;
             if (Link.Peers.TryGetValue(puppet.Id, out string name)) puppet.DisplayName = name + (roleIndex < LunarRoleDefinition.All.Length ? " (" + LunarRoleDefinition.All[roleIndex].title + ")" : "");
@@ -724,6 +771,13 @@ namespace LunaCero
                     replicas[id] = replica;
                 }
                 if (replica.Enemy == null) { replicas.Remove(id); continue; }
+                float gap = now - replica.Seen;
+                if (gap > 0.02f && gap < 0.5f)
+                {
+                    Vector3 measured = (position - replica.Position) / gap;
+                    replica.Velocity = measured.sqrMagnitude > 400f ? Vector3.zero : Vector3.Lerp(replica.Velocity, measured, 0.6f);
+                }
+                else replica.Velocity = Vector3.zero;
                 replica.Position = position;
                 replica.Yaw = yaw;
                 replica.Seen = now;
@@ -774,9 +828,11 @@ namespace LunaCero
                 if (!replica.Dead && now - replica.Seen > 1.5f) { Destroy(replica.Enemy.gameObject); replicas.Remove(pair.Key); continue; }
                 if (replica.Dead) continue;
                 var t = replica.Enemy.transform;
-                if ((t.position - replica.Position).sqrMagnitude > 100f) t.position = replica.Position;
-                else t.position = Vector3.Lerp(t.position, replica.Position, 1f - Mathf.Exp(-12f * dt));
-                t.rotation = Quaternion.Slerp(t.rotation, Quaternion.Euler(0, replica.Yaw, 0), 1f - Mathf.Exp(-12f * dt));
+                // Prediccion: entre paquetes (10 por segundo) sigue avanzando con su ultima velocidad.
+                Vector3 predicted = replica.Position + replica.Velocity * Mathf.Min(now - replica.Seen, 0.25f);
+                if ((t.position - predicted).sqrMagnitude > 100f) t.position = predicted;
+                else t.position = Vector3.Lerp(t.position, predicted, 1f - Mathf.Exp(-9f * dt));
+                t.rotation = Quaternion.Slerp(t.rotation, Quaternion.Euler(0, replica.Yaw, 0), 1f - Mathf.Exp(-8f * dt));
             }
         }
 

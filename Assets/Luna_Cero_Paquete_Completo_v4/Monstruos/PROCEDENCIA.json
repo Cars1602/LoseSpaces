@@ -1,0 +1,484 @@
+[
+  {
+    "archivo": "Acechador/Acechador_base_ambiente.wav",
+    "duracion_s": 4.5,
+    "fuentes": [
+      {
+        "archivo": "gorilla/flac/gorilla_grunt.flac",
+        "inicio_s": 0.06,
+        "nivel": 0.9,
+        "velocidad": 0.82,
+        "recorte_s": [
+          0,
+          2.6
+        ]
+      },
+      {
+        "archivo": "gorilla/flac/gorilla_snarl_04.flac",
+        "inicio_s": 2.7,
+        "nivel": 0.7,
+        "velocidad": 0.87,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "creatures2/monster_20.ogg",
+        "inicio_s": 0.65,
+        "nivel": 0.22,
+        "velocidad": 1.0,
+        "recorte_s": [
+          0,
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Acechador/Acechador_ataque_enojo.wav",
+    "duracion_s": 2.3,
+    "fuentes": [
+      {
+        "archivo": "bear/flac/bear_02.flac",
+        "inicio_s": 0.015,
+        "nivel": 0.75,
+        "velocidad": 0.78,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "gorilla/flac/gorilla_roar.flac",
+        "inicio_s": 0.1,
+        "nivel": 1.1,
+        "velocidad": 0.83,
+        "recorte_s": [
+          0,
+          1.25
+        ]
+      },
+      {
+        "archivo": "bat/flac/bat_02.flac",
+        "inicio_s": 0.25,
+        "nivel": 0.16,
+        "velocidad": 0.57,
+        "recorte_s": [
+          0.2,
+          0.95
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Acechador/Acechador_muerte.wav",
+    "duracion_s": 3.2,
+    "fuentes": [
+      {
+        "archivo": "gorilla/flac/gorilla_snarl_03.flac",
+        "inicio_s": 0.015,
+        "nivel": 0.95,
+        "velocidad": 0.65,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "creatures2/die_04.ogg",
+        "inicio_s": 0.22,
+        "nivel": 0.35,
+        "velocidad": 0.7,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "gorilla/flac/gorilla_grunt.flac",
+        "inicio_s": 1.9,
+        "nivel": 0.45,
+        "velocidad": 0.68,
+        "recorte_s": [
+          1.9,
+          2.6
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Enjambre/Enjambre_base_ambiente.wav",
+    "duracion_s": 3.5,
+    "fuentes": [
+      {
+        "archivo": "bat/flac/bat_01.flac",
+        "inicio_s": 0.02,
+        "nivel": 0.9,
+        "velocidad": 0.73,
+        "recorte_s": [
+          0,
+          1.3
+        ]
+      },
+      {
+        "archivo": "bat/flac/bat_03.flac",
+        "inicio_s": 1.45,
+        "nivel": 0.65,
+        "velocidad": 0.87,
+        "recorte_s": [
+          0,
+          1.25
+        ]
+      },
+      {
+        "archivo": "creatures2/bug_08.ogg",
+        "inicio_s": 0.65,
+        "nivel": 0.18,
+        "velocidad": 0.95,
+        "recorte_s": [
+          0,
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Enjambre/Enjambre_ataque_enojo.wav",
+    "duracion_s": 2.15,
+    "fuentes": [
+      {
+        "archivo": "bat/flac/bat_02.flac",
+        "inicio_s": 0.005,
+        "nivel": 1.0,
+        "velocidad": 0.84,
+        "recorte_s": [
+          0,
+          1.6
+        ]
+      },
+      {
+        "archivo": "bat/flac/bat_03.flac",
+        "inicio_s": 0.17,
+        "nivel": 0.45,
+        "velocidad": 0.7,
+        "recorte_s": [
+          0,
+          1.0
+        ]
+      },
+      {
+        "archivo": "creatures2/monster_15.ogg",
+        "inicio_s": 0.06,
+        "nivel": 0.32,
+        "velocidad": 1.17,
+        "recorte_s": [
+          0,
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Enjambre/Enjambre_muerte.wav",
+    "duracion_s": 2.7,
+    "fuentes": [
+      {
+        "archivo": "bat/flac/bat_03.flac",
+        "inicio_s": 0.015,
+        "nivel": 1.0,
+        "velocidad": 0.61,
+        "recorte_s": [
+          0,
+          1.25
+        ]
+      },
+      {
+        "archivo": "creatures2/die_01.ogg",
+        "inicio_s": 0.15,
+        "nivel": 0.35,
+        "velocidad": 0.9,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "bat/flac/bat_01.flac",
+        "inicio_s": 1.4,
+        "nivel": 0.3,
+        "velocidad": 0.52,
+        "recorte_s": [
+          0.75,
+          1.25
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Escupidor/Escupidor_base_ambiente.wav",
+    "duracion_s": 4.1,
+    "fuentes": [
+      {
+        "archivo": "camel/flac/camel_02.flac",
+        "inicio_s": 0.04,
+        "nivel": 0.95,
+        "velocidad": 0.88,
+        "recorte_s": [
+          0.2,
+          3.3
+        ]
+      },
+      {
+        "archivo": "creatures2/slime_05.ogg",
+        "inicio_s": 0.8,
+        "nivel": 0.23,
+        "velocidad": 0.78,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "creatures2/slime_03.ogg",
+        "inicio_s": 2.15,
+        "nivel": 0.24,
+        "velocidad": 0.82,
+        "recorte_s": [
+          0,
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Escupidor/Escupidor_ataque_enojo.wav",
+    "duracion_s": 2.95,
+    "fuentes": [
+      {
+        "archivo": "camel/flac/camel_01.flac",
+        "inicio_s": 0.015,
+        "nivel": 1.0,
+        "velocidad": 0.88,
+        "recorte_s": [
+          0.2,
+          2.3
+        ]
+      },
+      {
+        "archivo": "creatures2/slime_02.ogg",
+        "inicio_s": 0.8,
+        "nivel": 0.55,
+        "velocidad": 0.78,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "creatures2/slime_06.ogg",
+        "inicio_s": 1.15,
+        "nivel": 0.4,
+        "velocidad": 0.95,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "gorilla/flac/gorilla_snarl_02.flac",
+        "inicio_s": 0.4,
+        "nivel": 0.3,
+        "velocidad": 0.8,
+        "recorte_s": [
+          0,
+          1.1
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Escupidor/Escupidor_muerte.wav",
+    "duracion_s": 4.0,
+    "fuentes": [
+      {
+        "archivo": "camel/flac/camel_02.flac",
+        "inicio_s": 0.015,
+        "nivel": 0.95,
+        "velocidad": 0.73,
+        "recorte_s": [
+          4.1,
+          6.45
+        ]
+      },
+      {
+        "archivo": "creatures2/die_02.ogg",
+        "inicio_s": 0.12,
+        "nivel": 0.28,
+        "velocidad": 0.72,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "creatures2/slime_04.ogg",
+        "inicio_s": 1.9,
+        "nivel": 0.35,
+        "velocidad": 0.68,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "creatures2/slime_08.ogg",
+        "inicio_s": 2.8,
+        "nivel": 0.25,
+        "velocidad": 0.72,
+        "recorte_s": [
+          0,
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Gigante/Gigante_base_ambiente.wav",
+    "duracion_s": 5.0,
+    "fuentes": [
+      {
+        "archivo": "camel/flac/camel_02.flac",
+        "inicio_s": 0.025,
+        "nivel": 1.0,
+        "velocidad": 0.65,
+        "recorte_s": [
+          0.6,
+          3.2
+        ]
+      },
+      {
+        "archivo": "gorilla/flac/gorilla_grunt.flac",
+        "inicio_s": 0.15,
+        "nivel": 0.5,
+        "velocidad": 0.62,
+        "recorte_s": [
+          0,
+          2.6
+        ]
+      },
+      {
+        "archivo": "creatures2/monster_20.ogg",
+        "inicio_s": 2.85,
+        "nivel": 0.32,
+        "velocidad": 0.77,
+        "recorte_s": [
+          0,
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Gigante/Gigante_ataque_enojo.wav",
+    "duracion_s": 5.4,
+    "fuentes": [
+      {
+        "archivo": "camel/flac/camel_01.flac",
+        "inicio_s": 0.015,
+        "nivel": 1.05,
+        "velocidad": 0.71,
+        "recorte_s": [
+          0,
+          3.34
+        ]
+      },
+      {
+        "archivo": "monster_roar.wav",
+        "inicio_s": 0.11,
+        "nivel": 0.7,
+        "velocidad": 1.0,
+        "recorte_s": [
+          0.2,
+          4.9
+        ]
+      },
+      {
+        "archivo": "bear/flac/bear_02.flac",
+        "inicio_s": 0.03,
+        "nivel": 0.5,
+        "velocidad": 0.62,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "gorilla/flac/gorilla_roar.flac",
+        "inicio_s": 0.08,
+        "nivel": 0.48,
+        "velocidad": 0.76,
+        "recorte_s": [
+          0,
+          1.25
+        ]
+      }
+    ]
+  },
+  {
+    "archivo": "Gigante/Gigante_muerte.wav",
+    "duracion_s": 5.9,
+    "fuentes": [
+      {
+        "archivo": "camel/flac/camel_02.flac",
+        "inicio_s": 0.015,
+        "nivel": 0.95,
+        "velocidad": 0.64,
+        "recorte_s": [
+          3.3,
+          6.5
+        ]
+      },
+      {
+        "archivo": "creatures2/roar_05.ogg",
+        "inicio_s": 0.12,
+        "nivel": 0.42,
+        "velocidad": 0.72,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "gorilla/flac/gorilla_snarl_03.flac",
+        "inicio_s": 2.9,
+        "nivel": 0.45,
+        "velocidad": 0.57,
+        "recorte_s": [
+          0,
+          1.45
+        ]
+      },
+      {
+        "archivo": "creatures2/die_03.ogg",
+        "inicio_s": 3.3,
+        "nivel": 0.45,
+        "velocidad": 0.65,
+        "recorte_s": [
+          0,
+          null
+        ]
+      },
+      {
+        "archivo": "creatures2/stomp_01.ogg",
+        "inicio_s": 3.85,
+        "nivel": 0.32,
+        "velocidad": 0.68,
+        "recorte_s": [
+          0,
+          null
+        ]
+      }
+    ]
+  }
+]

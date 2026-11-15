@@ -1,0 +1,56 @@
+LUNA CERO — PAQUETE COMPLETO V4
+Monstruos + armas de energia + municiones + lobby
+
+CONTENIDO: 106 archivos WAV y 17 imagenes.
+12 sonidos de monstruos de la version v3, conservados sin cambios.
+79 sonidos de armas, 13 sonidos de municiones y 2 pistas de lobby.
+No se incluyen detonaciones de polvora ni casquillos: los disparos estan
+disenados como descargas de energia, pulsos y haces.
+
+CARPETAS
+Monstruos/        Acechador, Enjambre, Escupidor y Gigante.
+Armas/           Pistola Lunar, Escopeta de Pulsos, Fusil Lunar y Rifle de Precision.
+Municiones/      Cada tipo incluye su imagen y 3 variantes de recogida.
+Lobby/           Musica ambiental original y ambiente interior separado.
+Referencias/     Lamina original de municiones.
+
+Cada carpeta de arma incluye la lamina de vistas original y un recorte
+lateral fiel. Los recortes conservan el fondo: no son sprites transparentes.
+
+ASOCIACIONES
+Pistola Lunar         -> Municion de Pistola (naranja/cian).
+Escopeta de Pulsos    -> Cartuchos de Pulso (amarillo/azul).
+Fusil Lunar           -> Celdas de Rifle (rojo/violeta).
+Rifle de Precision   -> Capsula de Plasma (verde/turquesa).
+
+FORMATO
+WAV PCM de 24 bits / 48 kHz. Efectos y monstruos mono para ubicarlos en 3D.
+Lobby stereo. Las frecuencias de muestreo de las fuentes de terceros pueden
+ser inferiores; exportar a 48 kHz no recupera detalle ausente de la fuente.
+Las pistas no normalizan todas las acciones al mismo volumen: los disparos
+son protagonistas; manejo, avisos, carga y ambiente conservan margen.
+
+LOBBY
+Lobby_Luna_Cero_Musica_LOOP_96s.wav: composicion original, 96 s, 60 BPM,
+24 compases, ambiente electronico lento, espacial y misterioso. Preparada
+como ciclo musical: no tiene un final definitivo y debe repetirse sin pausas.
+Base_Lunar_Ambiente_LOOP_48s.wav: interior ficticio de un habitat lunar,
+con ventilacion, energia y resonancias lejanas. Sin musica ni voces.
+No se presenta como una grabacion real de la superficie lunar.
+
+INTEGRACION
+Consultar GUIA_DE_USO.txt y MANIFIESTO.csv para elegir sonidos por accion.
+TIEMPOS_DE_RECARGA.json contiene las marcas de las recargas completas.
+No reproducir Recarga_Completa y los tres pasos separados al mismo tiempo.
+
+REVISION
+Se reabrieron todos los WAV y las imagenes. VERIFICACION.json contiene
+formato, duracion, picos, senal, extremos, limites de los bucles y hashes.
+La revision es tecnica y visual; no se realizo escucha humana ni se
+certifica un nivel artistico o de realismo por estos analisis.
+
+ORIGINALIDAD Y FUENTES
+Las armas combinan sintesis de energia creada para este paquete con capas
+de contacto de metal CC0. Las dos pistas de lobby son composiciones y
+texturas sintetizadas nuevas, sin musica de terceros. Los monstruos
+mantienen las mezclas v3 y sus fuentes CC0. Creditos en CREDITOS_Y_FUENTES.txt.

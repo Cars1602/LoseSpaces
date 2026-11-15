@@ -1,0 +1,227 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bea57a54c958a32489b322c256e3cfd0, type: 3}
+  m_Name: LunarAudioBank
+  m_EditorClassIdentifier: 
+  entries:
+  - key: Armas/Escopeta_de_Pulsos/Carga_Cancelar
+    clip: {fileID: 8300000, guid: 921bff02e10cd1a4eb45ffe6fb62cad6, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Carga_Inicio
+    clip: {fileID: 8300000, guid: 1594277f0703e884f8c6e60f224895aa, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Carga_Lista
+    clip: {fileID: 8300000, guid: a0b65e2a3f8be0549a9bcc4e6f90d64c, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Carga_Sostenida_LOOP
+    clip: {fileID: 8300000, guid: 41db5462e6313334692ef8da2a6108dc, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Disparo_01
+    clip: {fileID: 8300000, guid: 574d365b04cdcbd49a0fd22b283809d0, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Disparo_02
+    clip: {fileID: 8300000, guid: b0a625de7bf8daa40b7ecbfafb3f6c0a, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Disparo_03
+    clip: {fileID: 8300000, guid: b90d8a383b2982a4d846a189aa6af651, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Disparo_Cargado
+    clip: {fileID: 8300000, guid: c6d860815c97795408cbd8f4cf1caf55, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Enfriamiento
+    clip: {fileID: 8300000, guid: 147ec5273ee2d29469afc2a2f0dfdd12, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Equipar
+    clip: {fileID: 8300000, guid: 0a59649d8e834c642b1baa0a95d92622, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Guardar
+    clip: {fileID: 8300000, guid: 56256e5df8db6ae469cc16721464e29b, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Impacto_Energia
+    clip: {fileID: 8300000, guid: f93ea9528ac47794195abb8c2b7b0b58, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Recarga_Activar_Energia
+    clip: {fileID: 8300000, guid: 13e2bf6d8da0e5940970053be0075249, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Recarga_Completa
+    clip: {fileID: 8300000, guid: a3efacccdf6bf9548942e1972eba206a, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Recarga_Extraer_Celda
+    clip: {fileID: 8300000, guid: dd2c6755dc37a1f45b8898322e7298fe, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Recarga_Insertar_Celda
+    clip: {fileID: 8300000, guid: b815101fd12665e43b6647bb081ee6c5, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Recoger_Arma
+    clip: {fileID: 8300000, guid: d29f5c8a21d5d214d8801aa6bfcabfc3, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Sin_Energia
+    clip: {fileID: 8300000, guid: 77f6071a39a87574b87a35e6ad14c577, type: 3}
+  - key: Armas/Escopeta_de_Pulsos/Sobrecalentamiento
+    clip: {fileID: 8300000, guid: c951ebfe6dab12448af7b34ced27447a, type: 3}
+  - key: Armas/Fusil_Lunar/Carga_Cancelar
+    clip: {fileID: 8300000, guid: 83f7b32ee5e91d942b62f3201c879761, type: 3}
+  - key: Armas/Fusil_Lunar/Carga_Inicio
+    clip: {fileID: 8300000, guid: da8d8906b19630746a7ab9b6e6b39319, type: 3}
+  - key: Armas/Fusil_Lunar/Carga_Lista
+    clip: {fileID: 8300000, guid: 0c5eaa725f5beea449ee3ef2dfd3048b, type: 3}
+  - key: Armas/Fusil_Lunar/Carga_Sostenida_LOOP
+    clip: {fileID: 8300000, guid: e66fb12706d854941a08b202027497f0, type: 3}
+  - key: Armas/Fusil_Lunar/Disparo_01
+    clip: {fileID: 8300000, guid: 5e690380d87633548a1b975b79b07158, type: 3}
+  - key: Armas/Fusil_Lunar/Disparo_02
+    clip: {fileID: 8300000, guid: bd943daee7f49af49902423daded47b7, type: 3}
+  - key: Armas/Fusil_Lunar/Disparo_03
+    clip: {fileID: 8300000, guid: b2f6506d2d5497f4292e4cc3641f5f5e, type: 3}
+  - key: Armas/Fusil_Lunar/Disparo_Cargado
+    clip: {fileID: 8300000, guid: b7469763bfec02d4691e2523f7dbcef7, type: 3}
+  - key: Armas/Fusil_Lunar/Enfriamiento
+    clip: {fileID: 8300000, guid: 0647bb36bee4a7b4292d275b818b6fec, type: 3}
+  - key: Armas/Fusil_Lunar/Equipar
+    clip: {fileID: 8300000, guid: a6d3fcb58d7d6684c960de5825bd88a7, type: 3}
+  - key: Armas/Fusil_Lunar/Guardar
+    clip: {fileID: 8300000, guid: 65af78a93a248bd47b9902c0c2982993, type: 3}
+  - key: Armas/Fusil_Lunar/Impacto_Energia
+    clip: {fileID: 8300000, guid: c935f6d38071b814d88019a7cb64fd49, type: 3}
+  - key: Armas/Fusil_Lunar/Rafaga_3_Disparos
+    clip: {fileID: 8300000, guid: dda4dbb91e1b2f5429e6a93618b552e3, type: 3}
+  - key: Armas/Fusil_Lunar/Recarga_Activar_Energia
+    clip: {fileID: 8300000, guid: 5c31b5cfd09d8674987d38ef05e7cc43, type: 3}
+  - key: Armas/Fusil_Lunar/Recarga_Completa
+    clip: {fileID: 8300000, guid: 7a11045bf508eac4cba4098aae444775, type: 3}
+  - key: Armas/Fusil_Lunar/Recarga_Extraer_Celda
+    clip: {fileID: 8300000, guid: 53d6b249a69605f409ec11d2335334e4, type: 3}
+  - key: Armas/Fusil_Lunar/Recarga_Insertar_Celda
+    clip: {fileID: 8300000, guid: 174026258f379cc46ac369bfc1aa800c, type: 3}
+  - key: Armas/Fusil_Lunar/Recoger_Arma
+    clip: {fileID: 8300000, guid: e556edfd562bcd149aa9cc756b6d68b9, type: 3}
+  - key: Armas/Fusil_Lunar/Sin_Energia
+    clip: {fileID: 8300000, guid: f2ee494e3c2de4449b0592c4862047d2, type: 3}
+  - key: Armas/Fusil_Lunar/Sobrecalentamiento
+    clip: {fileID: 8300000, guid: 565dab3d2ebb6f241a95bf1a36203a4d, type: 3}
+  - key: Armas/Pistola_Lunar/Carga_Cancelar
+    clip: {fileID: 8300000, guid: 4c5a584f81fac3b4c8b3718f6bb0629d, type: 3}
+  - key: Armas/Pistola_Lunar/Carga_Inicio
+    clip: {fileID: 8300000, guid: 766c13392f86ab2428bef361e89e9e3d, type: 3}
+  - key: Armas/Pistola_Lunar/Carga_Lista
+    clip: {fileID: 8300000, guid: 42a8fc3bea6cf084ebd42ca2ecb91f8f, type: 3}
+  - key: Armas/Pistola_Lunar/Carga_Sostenida_LOOP
+    clip: {fileID: 8300000, guid: cc1fe4193fd90ad4a9fcbdbc432ded42, type: 3}
+  - key: Armas/Pistola_Lunar/Disparo_01
+    clip: {fileID: 8300000, guid: c810b7a9f9afb08448c48b28ee170b51, type: 3}
+  - key: Armas/Pistola_Lunar/Disparo_02
+    clip: {fileID: 8300000, guid: de8060ed288d0974e81a0ca2f118c31b, type: 3}
+  - key: Armas/Pistola_Lunar/Disparo_03
+    clip: {fileID: 8300000, guid: ec021a1857531924f9fa556f7db05800, type: 3}
+  - key: Armas/Pistola_Lunar/Disparo_Cargado
+    clip: {fileID: 8300000, guid: 3bcbe68d74ef2f544a16a973aff2d4f4, type: 3}
+  - key: Armas/Pistola_Lunar/Enfriamiento
+    clip: {fileID: 8300000, guid: 3816ec1c1d9acc54b94ba08bbf767140, type: 3}
+  - key: Armas/Pistola_Lunar/Equipar
+    clip: {fileID: 8300000, guid: ce4bce45005e7924ab301a9632806287, type: 3}
+  - key: Armas/Pistola_Lunar/Guardar
+    clip: {fileID: 8300000, guid: ab9b821befc4e5849b09d7abfc8080ad, type: 3}
+  - key: Armas/Pistola_Lunar/Impacto_Energia
+    clip: {fileID: 8300000, guid: 08576106a908ebe42aab8f9430c946ff, type: 3}
+  - key: Armas/Pistola_Lunar/Recarga_Activar_Energia
+    clip: {fileID: 8300000, guid: 143f32e544d5d214b8fc35aa8ae208be, type: 3}
+  - key: Armas/Pistola_Lunar/Recarga_Completa
+    clip: {fileID: 8300000, guid: 321bf7c713ce3ca48b6b65dfa3edd6e2, type: 3}
+  - key: Armas/Pistola_Lunar/Recarga_Extraer_Celda
+    clip: {fileID: 8300000, guid: f87d00a6c8d31c047836c1b50899b436, type: 3}
+  - key: Armas/Pistola_Lunar/Recarga_Insertar_Celda
+    clip: {fileID: 8300000, guid: 93fc33e1aa6b779468f16331db5f4951, type: 3}
+  - key: Armas/Pistola_Lunar/Recoger_Arma
+    clip: {fileID: 8300000, guid: 363b19a77cd85084e91d49996cb810a4, type: 3}
+  - key: Armas/Pistola_Lunar/Sin_Energia
+    clip: {fileID: 8300000, guid: 769c497e4ee00404eb00aeaed36ac5da, type: 3}
+  - key: Armas/Pistola_Lunar/Sobrecalentamiento
+    clip: {fileID: 8300000, guid: 406286a43c96ab44b8ea950606aaad95, type: 3}
+  - key: Armas/Rifle_de_Precision/Carga_Cancelar
+    clip: {fileID: 8300000, guid: 71988f2f479641046a0743560300736f, type: 3}
+  - key: Armas/Rifle_de_Precision/Carga_Inicio
+    clip: {fileID: 8300000, guid: edf208852ec23b246834cc8f66759b3e, type: 3}
+  - key: Armas/Rifle_de_Precision/Carga_Lista
+    clip: {fileID: 8300000, guid: 483406b90c42e7f43a04a39950977890, type: 3}
+  - key: Armas/Rifle_de_Precision/Carga_Sostenida_LOOP
+    clip: {fileID: 8300000, guid: 358a0bd857033c441a6ced2d0580a89e, type: 3}
+  - key: Armas/Rifle_de_Precision/Disparo_01
+    clip: {fileID: 8300000, guid: 87785f362e623554780557b22e1f23af, type: 3}
+  - key: Armas/Rifle_de_Precision/Disparo_02
+    clip: {fileID: 8300000, guid: f64ef826fac201248a271aecf7b06e1a, type: 3}
+  - key: Armas/Rifle_de_Precision/Disparo_03
+    clip: {fileID: 8300000, guid: d0d7b632e0fb6fc4d960cf1ed392797a, type: 3}
+  - key: Armas/Rifle_de_Precision/Disparo_Cargado
+    clip: {fileID: 8300000, guid: ea00252f13e081145b5411835ab9305e, type: 3}
+  - key: Armas/Rifle_de_Precision/Enfriamiento
+    clip: {fileID: 8300000, guid: 74b42bbfda91a8a45a2db4fb2aecd5aa, type: 3}
+  - key: Armas/Rifle_de_Precision/Equipar
+    clip: {fileID: 8300000, guid: 98df154ce38b52b49b1239d982045585, type: 3}
+  - key: Armas/Rifle_de_Precision/Guardar
+    clip: {fileID: 8300000, guid: 12aa65181ec32e24fb109b31fbd3be9e, type: 3}
+  - key: Armas/Rifle_de_Precision/Impacto_Energia
+    clip: {fileID: 8300000, guid: 756e95fda282e8c428b39ccde679e2fa, type: 3}
+  - key: Armas/Rifle_de_Precision/Mira_Entrar
+    clip: {fileID: 8300000, guid: d3ead7aeb3c00134ca096de454b9d734, type: 3}
+  - key: Armas/Rifle_de_Precision/Mira_Salir
+    clip: {fileID: 8300000, guid: 87ed72c4241c7d24da675ae7dfe23154, type: 3}
+  - key: Armas/Rifle_de_Precision/Recarga_Activar_Energia
+    clip: {fileID: 8300000, guid: 0ea1a96895d5ab148beaf122c65e3577, type: 3}
+  - key: Armas/Rifle_de_Precision/Recarga_Completa
+    clip: {fileID: 8300000, guid: 183a3dc141346dc4dbd56d4fcabb8845, type: 3}
+  - key: Armas/Rifle_de_Precision/Recarga_Extraer_Celda
+    clip: {fileID: 8300000, guid: 2682da1c9ebbfd2409364496fb2d1655, type: 3}
+  - key: Armas/Rifle_de_Precision/Recarga_Insertar_Celda
+    clip: {fileID: 8300000, guid: 652b2306b31bb2b469bcc7a492d0d96f, type: 3}
+  - key: Armas/Rifle_de_Precision/Recoger_Arma
+    clip: {fileID: 8300000, guid: 1214edcf7c18f7940898e14cc7a601fd, type: 3}
+  - key: Armas/Rifle_de_Precision/Sin_Energia
+    clip: {fileID: 8300000, guid: 5425e3b284fd8254aa2b79824c11c01a, type: 3}
+  - key: Armas/Rifle_de_Precision/Sobrecalentamiento
+    clip: {fileID: 8300000, guid: 406da28cf2ac08c4faac063a8c30d1ac, type: 3}
+  - key: Lobby/Base_Lunar_Ambiente_LOOP_48s
+    clip: {fileID: 8300000, guid: 3f2077cfafa4e764c8f582ade3c4d155, type: 3}
+  - key: Lobby/Lobby_Luna_Cero_Musica_LOOP_96s
+    clip: {fileID: 8300000, guid: d7dc51d1a8ab6a94b84786760a3ab1ac, type: 3}
+  - key: Monstruos/Acechador/Acechador_ataque_enojo
+    clip: {fileID: 8300000, guid: 3a5f0d92e0362d545acc42afa14d83f4, type: 3}
+  - key: Monstruos/Acechador/Acechador_base_ambiente
+    clip: {fileID: 8300000, guid: ede4cbd571662914c98db5c2f56e79c6, type: 3}
+  - key: Monstruos/Acechador/Acechador_muerte
+    clip: {fileID: 8300000, guid: 77f3d0d6f1c1d2a41aea9bd54998f63c, type: 3}
+  - key: Monstruos/Enjambre/Enjambre_ataque_enojo
+    clip: {fileID: 8300000, guid: 87c740af72ca9f4489aa8d1391e05206, type: 3}
+  - key: Monstruos/Enjambre/Enjambre_base_ambiente
+    clip: {fileID: 8300000, guid: a17a8ab0f7a7c8c44a6beb0720d04d1b, type: 3}
+  - key: Monstruos/Enjambre/Enjambre_muerte
+    clip: {fileID: 8300000, guid: bc0d04f4cefc93443a39d4aeab8dd17d, type: 3}
+  - key: Monstruos/Escupidor/Escupidor_ataque_enojo
+    clip: {fileID: 8300000, guid: 9a64effeededf6f4cb9e8fc282c3d4f5, type: 3}
+  - key: Monstruos/Escupidor/Escupidor_base_ambiente
+    clip: {fileID: 8300000, guid: 07b03cc1b105b784b984be958600f934, type: 3}
+  - key: Monstruos/Escupidor/Escupidor_muerte
+    clip: {fileID: 8300000, guid: 1d7afd43f3af8484785a5b2273337431, type: 3}
+  - key: Monstruos/Gigante/Gigante_ataque_enojo
+    clip: {fileID: 8300000, guid: 19f75875fa0f35848a894658e03cb7bb, type: 3}
+  - key: Monstruos/Gigante/Gigante_base_ambiente
+    clip: {fileID: 8300000, guid: 34d844528d4c4f4438040570a96ff896, type: 3}
+  - key: Monstruos/Gigante/Gigante_muerte
+    clip: {fileID: 8300000, guid: a329f524c647c5c4eb597fc2b7c66824, type: 3}
+  - key: Municiones/Capsula_de_Plasma/Recoger_01
+    clip: {fileID: 8300000, guid: c4afab58abafaa04790b254146b1934a, type: 3}
+  - key: Municiones/Capsula_de_Plasma/Recoger_02
+    clip: {fileID: 8300000, guid: aa833407c35eadc40a2bc90bd0d587f2, type: 3}
+  - key: Municiones/Capsula_de_Plasma/Recoger_03
+    clip: {fileID: 8300000, guid: 533fb8aca07c4414fbe54130d8227e79, type: 3}
+  - key: Municiones/Cartuchos_de_Pulso/Recoger_01
+    clip: {fileID: 8300000, guid: 1efd3b9f71fedf046b4f9369260f2917, type: 3}
+  - key: Municiones/Cartuchos_de_Pulso/Recoger_02
+    clip: {fileID: 8300000, guid: d611f1534f2730f44abbf716e1dcf590, type: 3}
+  - key: Municiones/Cartuchos_de_Pulso/Recoger_03
+    clip: {fileID: 8300000, guid: e07f0df5a7e9ec847ac663903f1b2c92, type: 3}
+  - key: Municiones/Celdas_de_Rifle/Recoger_01
+    clip: {fileID: 8300000, guid: e7383e008e1bd7e4bacb99c108cc2918, type: 3}
+  - key: Municiones/Celdas_de_Rifle/Recoger_02
+    clip: {fileID: 8300000, guid: ffe7c1271baebc046a144e100f1abbb9, type: 3}
+  - key: Municiones/Celdas_de_Rifle/Recoger_03
+    clip: {fileID: 8300000, guid: 1dc7142dcf8a7344a8ade7afd9326763, type: 3}
+  - key: Municiones/Inventario_Lleno
+    clip: {fileID: 8300000, guid: 6c20aeca7ea15c849bd953b926030960, type: 3}
+  - key: Municiones/Municion_Pistola/Recoger_01
+    clip: {fileID: 8300000, guid: 81642558866247043b910d9a3f0fd6cf, type: 3}
+  - key: Municiones/Municion_Pistola/Recoger_02
+    clip: {fileID: 8300000, guid: d6d7b49e16ecfcc4d980b9563a7111b4, type: 3}
+  - key: Municiones/Municion_Pistola/Recoger_03
+    clip: {fileID: 8300000, guid: 7101126edebbb6f42bade4c80601f400, type: 3}
